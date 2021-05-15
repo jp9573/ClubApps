@@ -15,7 +15,6 @@ publish-dev:
   services:
     - docker:dind
   script:
-    - echo "REACT_APP_PROJECT_ENV=$TEST_REACT_APP_PROJECT_ENV" >> .env
     - echo "REACT_APP_BACKEND_API_URL=$TEST_REACT_APP_BACKEND_API_URL" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
@@ -33,7 +32,6 @@ publish-test:
     - docker:dind
   script:
     - sed -i 's|YOURDOMAIN|applinks-gh42d3o.deww.in|g' nginx.conf
-    - echo "REACT_APP_PROJECT_ENV=$TEST_REACT_APP_PROJECT_ENV" >> .env
     - echo "REACT_APP_BACKEND_API_URL=$TEST_REACT_APP_BACKEND_API_URL" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
@@ -53,7 +51,6 @@ publish-prod:
     - docker:dind
   script:
     - sed -i 's|YOURDOMAIN|applinks.deww.in|g' nginx.conf
-    - echo "REACT_APP_PROJECT_ENV=$PROD_REACT_APP_PROJECT_ENV" >> .env
     - echo "REACT_APP_BACKEND_API_URL=$PROD_REACT_APP_BACKEND_API_URL" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
