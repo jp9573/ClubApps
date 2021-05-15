@@ -1,5 +1,7 @@
 stages:
-  - publish
+  - publish-dev
+  - publish-test
+  - publish-prod
   - deploy-test
   - deploy-prod
 
@@ -7,16 +9,62 @@ variables:
   TAG_LATEST: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:latest
   TAG_COMMIT: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
 
-publish:
+publish-dev:
   image: docker:latest
-  stage: publish
+  stage: publish-dev
   services:
     - docker:dind
   script:
+    - echo "REACT_APP_PROJECT_ENV=$TEST_REACT_APP_PROJECT_ENV" >> .env
+    - echo "REACT_APP_BACKEND_API_URL=$TEST_REACT_APP_BACKEND_API_URL" >> .env
+    - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $TAG_COMMIT
     - docker push $TAG_LATEST
+  except:
+    - test-env
+    - prod-env
+
+publish-test:
+  image: docker:latest
+  stage: publish-test
+  services:
+    - docker:dind
+  script:
+    - sed -i 's|YOURDOMAIN|applinks-gh42d3o.deww.in|g' nginx.conf
+    - echo "REACT_APP_PROJECT_ENV=$TEST_REACT_APP_PROJECT_ENV" >> .env
+    - echo "REACT_APP_BACKEND_API_URL=$TEST_REACT_APP_BACKEND_API_URL" >> .env
+    - cat .env
+    - docker build -t $TAG_COMMIT -t $TAG_LATEST .
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker push $TAG_COMMIT
+    - docker push $TAG_LATEST
+  environment:
+    name: test
+    url: https://$TEST_SERVER_DOMAIN
+  only:
+    - test-env
+
+publish-prod:
+  image: docker:latest
+  stage: publish-prod
+  services:
+    - docker:dind
+  script:
+    - sed -i 's|YOURDOMAIN|applinks.deww.in|g' nginx.conf
+    - echo "REACT_APP_PROJECT_ENV=$PROD_REACT_APP_PROJECT_ENV" >> .env
+    - echo "REACT_APP_BACKEND_API_URL=$PROD_REACT_APP_BACKEND_API_URL" >> .env
+    - cat .env
+    - docker build -t $TAG_COMMIT -t $TAG_LATEST .
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker push $TAG_COMMIT
+    - docker push $TAG_LATEST
+  environment:
+    name: prod
+    url: https://$PROD_SERVER_DOMAIN
+  only:
+    - prod-env
 
 deploy-test:
   image: alpine:latest
@@ -28,11 +76,15 @@ deploy-test:
     - apk update && apk add openssh-client
     - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
     - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "docker pull $TAG_COMMIT"
-    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "docker container rm -f my-app || true"
-    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "docker run -d -p 80:80 --name my-app $TAG_COMMIT"
+    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "curl -L https://gitlab.com/-/snippets/2053940/raw/master/docker-compose.yml > docker-compose.yml"
+    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "sed -i 's|yourimage|$TAG_COMMIT|g' docker-compose.yml"
+    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "curl -L https://gitlab.com/-/snippets/2053940/raw/master/init-letsencrypt.sh > init-letsencrypt.sh"
+    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "sed -i 's|yourdomains|$TEST_SERVER_DOMAIN|g' init-letsencrypt.sh"
+    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "docker-compose down"
+    - ssh -i $ID_RSA_TEST -o StrictHostKeyChecking=no $TEST_SERVER_USER@$TEST_SERVER_IP "docker-compose up -d"
   environment:
     name: test
-    url: http://$TEST_SERVER_IP
+    url: https://$TEST_SERVER_DOMAIN
   only:
     - test-env
 
@@ -46,10 +98,14 @@ deploy-prod:
     - apk update && apk add openssh-client
     - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
     - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "docker pull $TAG_COMMIT"
-    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "docker container rm -f my-app || true"
-    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "docker run -d -p 80:80 --name my-app $TAG_COMMIT"
+    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "curl -L https://gitlab.com/-/snippets/2053940/raw/master/docker-compose.yml > docker-compose.yml"
+    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "sed -i 's|yourimage|$TAG_COMMIT|g' docker-compose.yml"
+    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "curl -L https://gitlab.com/-/snippets/2053940/raw/master/init-letsencrypt.sh > init-letsencrypt.sh"
+    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "sed -i 's|yourdomains|$PROD_SERVER_DOMAIN www.$PROD_SERVER_DOMAIN|g' init-letsencrypt.sh"
+    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "docker-compose down"
+    - ssh -i $ID_RSA_PROD -o StrictHostKeyChecking=no $PROD_SERVER_USER@$PROD_SERVER_IP "docker-compose up -d"
   environment:
     name: prod
-    url: http://$PROD_SERVER_IP
+    url: https://$PROD_SERVER_DOMAIN
   only:
     - prod-env
