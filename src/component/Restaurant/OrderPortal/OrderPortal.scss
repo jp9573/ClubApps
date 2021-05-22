@@ -19,4 +19,22 @@
     .coupon-section {
         margin-bottom: 1rem;
     }
+
+    .main-section {
+        .grey-line {
+            height: 8px;
+            background-color: #dedede;
+            margin-left: -0.75rem;
+            margin-right: -0.75rem;
+        }
+
+        .veg-only {
+            .MuiSwitch-colorSecondary.Mui-checked {
+                color: #008000;
+            }
+            .MuiSwitch-colorSecondary.Mui-checked + .MuiSwitch-track {
+                background-color: #008000;
+            }
+        }
+    }
 }

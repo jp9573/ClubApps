@@ -5,12 +5,14 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import "./OrderPortal.scss";
 import StarIcon from "@material-ui/icons/Star";
 import CouponCard from "./CouponCard/CouponCard";
+import Switch from "@material-ui/core/Switch";
 
 class OrderPortal extends Component {
   state = {
     idToken: "fetching",
     menuItems: {},
     isLoading: true,
+    vegOnly: false,
   };
 
   componentDidMount() {
@@ -30,8 +32,12 @@ class OrderPortal extends Component {
       });
   };
 
+  handleOnVegOnly = (e) => {
+    this.setState({ vegOnly: e.target.checked });
+  };
+
   render() {
-    const { idToken, menuItems, isLoading } = this.state;
+    const { idToken, menuItems, isLoading, vegOnly } = this.state;
     const { name, category, rating, coupon } = menuItems;
 
     if (!idToken || idToken.length === 0) {
@@ -69,6 +75,18 @@ class OrderPortal extends Component {
             <CouponCard {...coupon} />
           </div>
         ) : null}
+
+        <div className="main-section">
+          <div className="grey-line"></div>
+          <div className="veg-only d-flex align-items-center">
+            <span>Veg Only</span>
+            <Switch
+              checked={vegOnly}
+              onChange={this.handleOnVegOnly}
+              name="vegOnly"
+            />
+          </div>
+        </div>
       </div>
     );
   }
