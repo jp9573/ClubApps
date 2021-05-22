@@ -1,0 +1,17 @@
+.order-portal {
+    .top-section {
+        border-bottom: 1px dashed #dedede;
+        padding: 1rem 0rem;
+
+        .title {
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        .category,
+        .impressions {
+            color: #848484;
+            font-size: 13px;
+        }
+    }
+}
