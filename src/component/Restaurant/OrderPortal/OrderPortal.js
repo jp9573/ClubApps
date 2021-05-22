@@ -4,6 +4,7 @@ import { fetchMenuApi } from "../../../common/Api";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import "./OrderPortal.scss";
 import StarIcon from "@material-ui/icons/Star";
+import CouponCard from "./CouponCard/CouponCard";
 
 class OrderPortal extends Component {
   state = {
@@ -31,7 +32,7 @@ class OrderPortal extends Component {
 
   render() {
     const { idToken, menuItems, isLoading } = this.state;
-    const { name, category, rating } = menuItems;
+    const { name, category, rating, coupon } = menuItems;
 
     if (!idToken || idToken.length === 0) {
       return <p>Invalid session, please try again with valid link.</p>;
@@ -62,6 +63,12 @@ class OrderPortal extends Component {
             </span>
           </div>
         </div>
+
+        {coupon ? (
+          <div className="coupon-section">
+            <CouponCard {...coupon} />
+          </div>
+        ) : null}
       </div>
     );
   }

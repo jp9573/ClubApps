@@ -1,6 +1,7 @@
 .order-portal {
     .top-section {
         border-bottom: 1px dashed #dedede;
+        margin-bottom: 1rem;
         padding: 1rem 0rem;
 
         .title {
@@ -13,5 +14,9 @@
             color: #848484;
             font-size: 13px;
         }
+    }
+
+    .coupon-section {
+        margin-bottom: 1rem;
     }
 }
