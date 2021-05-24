@@ -23,17 +23,43 @@
     .main-section {
         .grey-line {
             height: 8px;
-            background-color: #dedede;
+            background-color: #f1f1f1;
             margin-left: -0.75rem;
             margin-right: -0.75rem;
         }
 
         .veg-only {
+            border-bottom: 1px solid #dedede;
+            padding: 1rem 0;
+
             .MuiSwitch-colorSecondary.Mui-checked {
                 color: #008000;
             }
             .MuiSwitch-colorSecondary.Mui-checked + .MuiSwitch-track {
                 background-color: #008000;
+            }
+        }
+
+        .menu-sections {
+            .section {
+                padding-top: 1rem;
+
+                h5 {
+                    font-weight: 600;
+                    margin-bottom: 1rem;
+                }
+
+                &.repeat-section {
+                    .items {
+                        display: flex;
+                        flex-direction: row;
+                        overflow: auto;
+
+                        &::-webkit-scrollbar {
+                            display: none;
+                        }
+                    }
+                }
             }
         }
     }

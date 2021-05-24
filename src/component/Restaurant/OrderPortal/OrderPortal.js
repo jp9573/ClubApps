@@ -6,6 +6,7 @@ import "./OrderPortal.scss";
 import StarIcon from "@material-ui/icons/Star";
 import CouponCard from "./CouponCard/CouponCard";
 import Switch from "@material-ui/core/Switch";
+import MenuItemCard from "./MenuItemCard/MenuItemCard";
 
 class OrderPortal extends Component {
   state = {
@@ -13,6 +14,7 @@ class OrderPortal extends Component {
     menuItems: {},
     isLoading: true,
     vegOnly: false,
+    cartItems: [],
   };
 
   componentDidMount() {
@@ -36,9 +38,53 @@ class OrderPortal extends Component {
     this.setState({ vegOnly: e.target.checked });
   };
 
+  onItemRemove = (item) => {
+    let cartItems = this.state.cartItems;
+    let index = cartItems.indexOf(item.id);
+    if (index >= 0) {
+      cartItems.splice(index, 1);
+    }
+    this.setState({ cartItems });
+  };
+
+  onItemAdd = (item) => {
+    this.setState({ cartItems: [...this.state.cartItems, item.id] });
+  };
+
+  getMenuSections = (menu) => {
+    let { cartItems } = this.state;
+    let wantToRepeatSection = undefined;
+    let sections = null;
+
+    if (menu.hasOwnProperty("Want to Repeat?")) {
+      wantToRepeatSection = menu["Want to Repeat?"];
+
+      sections = (
+        <div className="section repeat-section">
+          <h5>Want to Repeat?</h5>
+          <div className="items">
+            {wantToRepeatSection.map((item, index) => (
+              <MenuItemCard
+                basicCard
+                menuItem={item}
+                key={index}
+                cartItemCount={cartItems.filter((i) => i === item.id).length}
+                onItemRemove={() => this.onItemRemove(item)}
+                onItemAdd={() => this.onItemAdd(item)}
+              />
+            ))}
+          </div>
+          <div className="grey-line"></div>
+        </div>
+      );
+    }
+
+    return sections;
+  };
+
   render() {
     const { idToken, menuItems, isLoading, vegOnly } = this.state;
-    const { name, category, rating, coupon } = menuItems;
+    const { name, category, rating, coupon, menu } = menuItems;
 
     if (!idToken || idToken.length === 0) {
       return <p>Invalid session, please try again with valid link.</p>;
@@ -86,6 +132,7 @@ class OrderPortal extends Component {
               name="vegOnly"
             />
           </div>
+          <div className="menu-sections">{this.getMenuSections(menu)}</div>
         </div>
       </div>
     );
