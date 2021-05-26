@@ -8,16 +8,23 @@ import CouponCard from "./CouponCard/CouponCard";
 import Switch from "@material-ui/core/Switch";
 import MenuItemCard from "./MenuItemCard/MenuItemCard";
 import RestaurantMenuIcon from "@material-ui/icons/RestaurantMenu";
+import { BottomSheet } from "react-spring-bottom-sheet";
+import "react-spring-bottom-sheet/dist/style.css";
 
 class OrderPortal extends Component {
-  state = {
-    idToken: "fetching",
-    menuItems: {},
-    originalMenuItems: {},
-    isLoading: true,
-    vegOnly: false,
-    cartItems: [],
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      idToken: "fetching",
+      menuItems: {},
+      originalMenuItems: {},
+      isLoading: true,
+      vegOnly: false,
+      cartItems: [],
+      isBrowseMenuVisible: false,
+    };
+    this.sectionRefs = {};
+  }
 
   componentDidMount() {
     const queryObj = qs.parse(this.props.location.search);
@@ -78,9 +85,13 @@ class OrderPortal extends Component {
 
     if (menu.hasOwnProperty("Want to Repeat?")) {
       wantToRepeatSection = menu["Want to Repeat?"];
+      this.sectionRefs["Want to Repeat?"] = React.createRef();
 
       wantToRepeatSection = (
-        <div className="section repeat-section">
+        <div
+          className="section repeat-section"
+          ref={(ref) => (this.sectionRefs["Want to Repeat?"] = ref)}
+        >
           <h5>Want to Repeat?</h5>
           <div className="items">
             {wantToRepeatSection.map((item, index) => (
@@ -99,11 +110,16 @@ class OrderPortal extends Component {
       );
     }
 
-    for (var key in menu) {
+    for (let key in menu) {
       if (menu.hasOwnProperty(key) && key !== "Want to Repeat?") {
+        this.sectionRefs[key] = React.createRef();
         let jsx = (
           <>
-            <div className="section">
+            <div
+              className="section"
+              key={key}
+              ref={(ref) => (this.sectionRefs[key] = ref)}
+            >
               <h5>{key}</h5>
               <div className="items">
                 {menu[key].map((item, index) => (
@@ -144,8 +160,52 @@ class OrderPortal extends Component {
     );
   };
 
+  openBrowseMenu = () => {
+    this.setState({ isBrowseMenuVisible: true });
+  };
+
+  getBottomSheetCategoriesJSX = () => {
+    let menu = this.state.menuItems.menu;
+
+    const scrollToSection = (sectionName) => {
+      this.sectionRefs[sectionName].scrollIntoView({
+        behavior: "smooth",
+      });
+      this.setState({ isBrowseMenuVisible: false });
+    };
+
+    return (
+      <>
+        <div
+          className="category-item"
+          onClick={() => scrollToSection("Want to Repeat?")}
+        >
+          <span className="item-name">Want to Repeat?</span>
+          <span className="count">{menu["Want to Repeat?"].length}</span>
+        </div>
+        {Object.keys(menu).map((key, index) => {
+          if (key !== "Want to Repeat?") {
+            return (
+              <div
+                className="category-item"
+                key={index}
+                onClick={() => scrollToSection(key)}
+              >
+                <span className="item-name">{key}</span>
+                <span className="count">{menu[key].length}</span>
+              </div>
+            );
+          } else {
+            return null;
+          }
+        })}
+      </>
+    );
+  };
+
   render() {
-    const { idToken, menuItems, isLoading, vegOnly } = this.state;
+    const { idToken, menuItems, isLoading, vegOnly, isBrowseMenuVisible } =
+      this.state;
     const { name, category, rating, coupon, menu } = menuItems;
 
     if (!idToken || idToken.length === 0) {
@@ -197,10 +257,22 @@ class OrderPortal extends Component {
           <div className="menu-sections">{this.getMenuSections(menu)}</div>
         </div>
 
-        <div className="browse-menu">
+        <div className="browse-menu" onClick={this.openBrowseMenu}>
           <RestaurantMenuIcon style={{ fill: "#ffffff" }} />
           <span>BROWSE MENU</span>
         </div>
+
+        <BottomSheet
+          open={isBrowseMenuVisible}
+          onDismiss={() => {
+            this.setState({ isBrowseMenuVisible: false });
+          }}
+          snapPoints={({ minHeight }) => minHeight}
+        >
+          <div className="browse-category-list">
+            {this.getBottomSheetCategoriesJSX()}
+          </div>
+        </BottomSheet>
       </div>
     );
   }

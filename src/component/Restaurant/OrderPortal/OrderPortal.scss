@@ -94,7 +94,27 @@
         span {
             margin-left: 0.4rem;
             font-weight: 600;
-            font-size: .86rem;
+            font-size: 0.86rem;
+        }
+    }
+}
+
+.browse-category-list {
+    padding: 1rem 2rem;
+
+    .category-item {
+        padding: 0.4rem 0;
+        display: grid;
+        grid-template-columns: 2fr 0.25fr;
+
+        .item-name {
+            width: 100%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .count {
+            text-align: right;
         }
     }
 }
