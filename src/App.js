@@ -3,7 +3,6 @@ import { Route, Switch } from "react-router";
 import { routesMapping } from "./common/const";
 
 class App extends Component {
-  state = {};
   render() {
     return (
       <Switch>
