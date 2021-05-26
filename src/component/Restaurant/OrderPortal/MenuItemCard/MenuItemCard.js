@@ -4,7 +4,7 @@ import AddIcon from "@material-ui/icons/Add";
 import RemoveIcon from "@material-ui/icons/Remove";
 import StarIcon from "@material-ui/icons/Star";
 
-const FoodTypeIcon = (props) => {
+export const FoodTypeIcon = (props) => {
   return (
     <div className={`food-icon ${props.isVeg ? "veg" : "non-veg"}`}>
       <div className="round"></div>
@@ -28,7 +28,7 @@ const AddButton = (props) => {
 
 const BasicCard = (props) => {
   const { menuItem, cartItemCount, onItemRemove, onItemAdd } = props;
-  const { name, price, type, shortDescription, customization } = menuItem;
+  const { name, price, type, shortDescription } = menuItem;
 
   return (
     <div className="card menu-item-card basic-card">
@@ -52,16 +52,8 @@ const BasicCard = (props) => {
 
 const RichCard = (props) => {
   const { menuItem, cartItemCount, onItemRemove, onItemAdd } = props;
-  const {
-    id,
-    name,
-    price,
-    imageUrl,
-    type,
-    tag,
-    shortDescription,
-    customization,
-  } = menuItem;
+  const { name, price, imageUrl, type, tag, shortDescription, customization } =
+    menuItem;
 
   return (
     <div className="rich-card">
@@ -81,7 +73,7 @@ const RichCard = (props) => {
       </div>
 
       <div className="right-section">
-        {imageUrl ? <img src={imageUrl} alt="Food Item Image" /> : null}
+        {imageUrl ? <img src={imageUrl} alt="Food Item" /> : null}
         <AddButton
           cartItemCount={cartItemCount}
           onItemRemove={onItemRemove}

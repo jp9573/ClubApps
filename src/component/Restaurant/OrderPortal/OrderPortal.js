@@ -6,7 +6,7 @@ import "./OrderPortal.scss";
 import StarIcon from "@material-ui/icons/Star";
 import CouponCard from "./CouponCard/CouponCard";
 import Switch from "@material-ui/core/Switch";
-import MenuItemCard from "./MenuItemCard/MenuItemCard";
+import MenuItemCard, { FoodTypeIcon } from "./MenuItemCard/MenuItemCard";
 import RestaurantMenuIcon from "@material-ui/icons/RestaurantMenu";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
@@ -22,6 +22,10 @@ class OrderPortal extends Component {
       vegOnly: false,
       cartItems: [],
       isBrowseMenuVisible: false,
+      isCustomizationMenuVisible: false,
+      currentMenuItem: undefined,
+      currentCustomizationIndex: undefined,
+      currentCustomizationSelection: undefined,
     };
     this.sectionRefs = {};
   }
@@ -67,7 +71,7 @@ class OrderPortal extends Component {
 
   onItemRemove = (item) => {
     let cartItems = this.state.cartItems;
-    let index = cartItems.indexOf(item.id);
+    let index = cartItems.indexOf(item);
     if (index >= 0) {
       cartItems.splice(index, 1);
     }
@@ -75,7 +79,18 @@ class OrderPortal extends Component {
   };
 
   onItemAdd = (item) => {
-    this.setState({ cartItems: [...this.state.cartItems, item.id] });
+    if (item.customization === null) {
+      this.setState({ cartItems: [...this.state.cartItems, item] });
+    } else {
+      this.setState({
+        currentMenuItem: item,
+        currentCustomizationIndex: 0,
+        isCustomizationMenuVisible: true,
+        currentCustomizationSelection: {
+          0: [],
+        },
+      });
+    }
   };
 
   getMenuSections = (menu) => {
@@ -99,7 +114,7 @@ class OrderPortal extends Component {
                 basicCard
                 menuItem={item}
                 key={index}
-                cartItemCount={cartItems.filter((i) => i === item.id).length}
+                cartItemCount={cartItems.filter((i) => i.id === item.id).length}
                 onItemRemove={() => this.onItemRemove(item)}
                 onItemAdd={() => this.onItemAdd(item)}
               />
@@ -127,7 +142,7 @@ class OrderPortal extends Component {
                     menuItem={item}
                     key={index}
                     cartItemCount={
-                      cartItems.filter((i) => i === item.id).length
+                      cartItems.filter((i) => i.id === item.id).length
                     }
                     onItemRemove={() => this.onItemRemove(item)}
                     onItemAdd={() => this.onItemAdd(item)}
@@ -203,9 +218,184 @@ class OrderPortal extends Component {
     );
   };
 
+  getCustomizationMenuJSX = () => {
+    const {
+      currentMenuItem,
+      currentCustomizationIndex,
+      currentCustomizationSelection,
+    } = this.state;
+
+    if (!currentMenuItem) return null;
+
+    const customization =
+      currentMenuItem.customization[currentCustomizationIndex];
+    const { step, selectionType, options } = customization;
+
+    let totalPrice = currentMenuItem.price;
+    let isButtonDisabled = false;
+
+    if (
+      selectionType === "Single" &&
+      currentCustomizationSelection[currentCustomizationIndex].length === 0
+    ) {
+      isButtonDisabled = true;
+    }
+
+    if (currentCustomizationSelection[currentCustomizationIndex]) {
+      currentCustomizationSelection[currentCustomizationIndex].forEach(
+        (option) => {
+          totalPrice += option.price;
+        }
+      );
+    }
+
+    const onItemAdd = () => {
+      if (
+        currentMenuItem.customization.length - 1 >
+        currentCustomizationIndex
+      ) {
+        this.setState({
+          currentCustomizationIndex: currentCustomizationIndex + 1,
+          currentCustomizationSelection: {
+            ...this.state.currentCustomizationSelection,
+            [currentCustomizationIndex + 1]: [],
+          },
+        });
+      } else {
+        this.setState({
+          cartItems: [
+            ...this.state.cartItems,
+            {
+              ...this.state.currentMenuItem,
+              customization: { ...this.state.currentCustomizationSelection },
+            },
+          ],
+          isCustomizationMenuVisible: false,
+          currentMenuItem: undefined,
+          currentCustomizationIndex: undefined,
+          currentCustomizationSelection: undefined,
+        });
+      }
+    };
+
+    return (
+      <>
+        <div className="top-section">
+          <span className="title">{step}</span>
+        </div>
+        <div className="middle-section">
+          {options.map((option, index) => {
+            if (selectionType === "Single") {
+              return (
+                <div className="option-slide" key={index}>
+                  <FoodTypeIcon isVeg={option.type.toLowerCase() === "veg"} />
+                  <div>
+                    <input
+                      type="radio"
+                      name={option.name}
+                      id={option.name}
+                      value={option.name}
+                      checked={
+                        currentCustomizationSelection[
+                          currentCustomizationIndex
+                        ] &&
+                        currentCustomizationSelection[
+                          currentCustomizationIndex
+                        ].includes(option)
+                      }
+                      onChange={(e) => {
+                        this.setState({
+                          currentCustomizationSelection: {
+                            ...this.state.currentCustomizationSelection,
+                            [currentCustomizationIndex]: [option],
+                          },
+                        });
+                      }}
+                    />
+                    <label htmlFor={option.name}>
+                      {option.name}{" "}
+                      <span className="price">&#8377; {option.price}</span>
+                    </label>
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <div className="option-slide" key={index}>
+                  <FoodTypeIcon isVeg={option.type.toLowerCase() === "veg"} />
+                  <div>
+                    <input
+                      type="checkbox"
+                      name={option.name}
+                      id={option.name}
+                      value={option.name}
+                      checked={
+                        currentCustomizationSelection[
+                          currentCustomizationIndex
+                        ] &&
+                        currentCustomizationSelection[
+                          currentCustomizationIndex
+                        ].includes(option)
+                      }
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          this.setState({
+                            currentCustomizationSelection: {
+                              ...this.state.currentCustomizationSelection,
+                              [currentCustomizationIndex]: [
+                                ...this.state.currentCustomizationSelection[
+                                  currentCustomizationIndex
+                                ],
+                                option,
+                              ],
+                            },
+                          });
+                        } else {
+                          this.setState({
+                            currentCustomizationSelection: {
+                              ...this.state.currentCustomizationSelection,
+                              [currentCustomizationIndex]:
+                                this.state.currentCustomizationSelection[
+                                  currentCustomizationIndex
+                                ].filter((item) => item !== option),
+                            },
+                          });
+                        }
+                      }}
+                    />
+                    <label htmlFor={option.name}>
+                      {option.name}{" "}
+                      <span className="price">&#8377; {option.price}</span>
+                    </label>
+                  </div>
+                </div>
+              );
+            }
+          })}
+        </div>
+        <div className="bottom-section">
+          <span className="price">Item total &#8377; {totalPrice}</span>
+          <button
+            className="btn btn-success next-button"
+            onClick={onItemAdd}
+            disabled={isButtonDisabled}
+          >
+            CONTINUE
+          </button>
+        </div>
+      </>
+    );
+  };
+
   render() {
-    const { idToken, menuItems, isLoading, vegOnly, isBrowseMenuVisible } =
-      this.state;
+    const {
+      idToken,
+      menuItems,
+      isLoading,
+      vegOnly,
+      isBrowseMenuVisible,
+      isCustomizationMenuVisible,
+    } = this.state;
     const { name, category, rating, coupon, menu } = menuItems;
 
     if (!idToken || idToken.length === 0) {
@@ -271,6 +461,18 @@ class OrderPortal extends Component {
         >
           <div className="browse-category-list">
             {this.getBottomSheetCategoriesJSX()}
+          </div>
+        </BottomSheet>
+
+        <BottomSheet
+          open={isCustomizationMenuVisible}
+          onDismiss={() => {
+            this.setState({ isCustomizationMenuVisible: false });
+          }}
+          snapPoints={({ minHeight }) => minHeight}
+        >
+          <div className="customization-menu-list">
+            {this.getCustomizationMenuJSX()}
           </div>
         </BottomSheet>
       </div>
