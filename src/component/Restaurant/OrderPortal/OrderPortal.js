@@ -53,13 +53,13 @@ class OrderPortal extends Component {
 
   getMenuSections = (menu) => {
     let { cartItems } = this.state;
-    let wantToRepeatSection = undefined;
+    let wantToRepeatSection = null;
     let sections = null;
 
     if (menu.hasOwnProperty("Want to Repeat?")) {
       wantToRepeatSection = menu["Want to Repeat?"];
 
-      sections = (
+      wantToRepeatSection = (
         <div className="section repeat-section">
           <h5>Want to Repeat?</h5>
           <div className="items">
@@ -79,7 +79,49 @@ class OrderPortal extends Component {
       );
     }
 
-    return sections;
+    for (var key in menu) {
+      if (menu.hasOwnProperty(key) && key !== "Want to Repeat?") {
+        let jsx = (
+          <>
+            <div className="section">
+              <h5>{key}</h5>
+              <div className="items">
+                {menu[key].map((item, index) => (
+                  <MenuItemCard
+                    menuItem={item}
+                    key={index}
+                    cartItemCount={
+                      cartItems.filter((i) => i === item.id).length
+                    }
+                    onItemRemove={() => this.onItemRemove(item)}
+                    onItemAdd={() => this.onItemAdd(item)}
+                  />
+                ))}
+              </div>
+              <div className="grey-line"></div>
+            </div>
+          </>
+        );
+
+        if (sections === null) {
+          sections = jsx;
+        } else {
+          sections = (
+            <>
+              {sections}
+              {jsx}
+            </>
+          );
+        }
+      }
+    }
+
+    return (
+      <>
+        {wantToRepeatSection}
+        {sections}
+      </>
+    );
   };
 
   render() {
