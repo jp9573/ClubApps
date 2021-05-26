@@ -231,7 +231,7 @@ class OrderPortal extends Component {
       currentMenuItem.customization[currentCustomizationIndex];
     const { step, selectionType, options } = customization;
 
-    let totalPrice = currentMenuItem.price;
+    let totalPrice = 0;
     let isButtonDisabled = false;
 
     if (
