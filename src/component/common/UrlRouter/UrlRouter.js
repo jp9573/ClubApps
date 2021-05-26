@@ -9,7 +9,10 @@ class UrlRouter extends Component {
     let token = this.props.match.params.token;
     urlResolver(token)
       .then((res) => {
-        this.props.history.push(res.data.longUrl);
+        let url = res.data.longUrl;
+        url = url.substring(url.indexOf(".in"));
+        url = url.substring(url.indexOf("/"));
+        this.props.history.push(url);
       })
       .catch((err) => {
         console.error(err.message);
