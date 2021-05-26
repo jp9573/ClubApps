@@ -74,10 +74,13 @@
   flex-shrink: 0;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  border-bottom: 1px solid #dedede;
 
   &:not(&:first-child) {
     margin-top: 0.5rem;
+  }
+
+  &:not(&:last-child) {
+    border-bottom: 1px solid #dedede;
   }
 
   .left-section {
@@ -167,8 +170,8 @@
   }
 
   .round {
-    height: 7px;
-    width: 7px;
+    height: 6px;
+    width: 6px;
     border-radius: 50%;
   }
 }
