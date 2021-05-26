@@ -131,6 +131,12 @@
     align-items: center;
     justify-content: center;
 
+    img {
+      width: 100%;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+    }
+
     .add-button {
       border-radius: 4px;
       min-width: 6rem;

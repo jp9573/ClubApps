@@ -28,16 +28,7 @@ const AddButton = (props) => {
 
 const BasicCard = (props) => {
   const { menuItem, cartItemCount, onItemRemove, onItemAdd } = props;
-  const {
-    id,
-    name,
-    price,
-    imageUrl,
-    type,
-    tag,
-    shortDescription,
-    customization,
-  } = menuItem;
+  const { name, price, type, shortDescription, customization } = menuItem;
 
   return (
     <div className="card menu-item-card basic-card">
