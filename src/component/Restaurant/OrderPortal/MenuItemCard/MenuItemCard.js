@@ -42,7 +42,7 @@ const BasicCard = (props) => {
   return (
     <div className="card menu-item-card basic-card">
       <div className="d-flex align-items-center title">
-        <FoodTypeIcon isVeg={type.toLowerCase() == "veg"} />
+        <FoodTypeIcon isVeg={type.toLowerCase() === "veg"} />
         <span className="item-name">{name}</span>
       </div>
       <span className="description">{shortDescription}</span>
@@ -76,7 +76,7 @@ const RichCard = (props) => {
     <div className="rich-card">
       <div className="left-section">
         <div className="d-flex align-items-center title">
-          <FoodTypeIcon isVeg={type.toLowerCase() == "veg"} />
+          <FoodTypeIcon isVeg={type.toLowerCase() === "veg"} />
           {tag ? (
             <>
               <StarIcon style={{ fill: "#FC8019" }} />

@@ -12,6 +12,7 @@ class OrderPortal extends Component {
   state = {
     idToken: "fetching",
     menuItems: {},
+    originalMenuItems: {},
     isLoading: true,
     vegOnly: false,
     cartItems: [],
@@ -26,7 +27,11 @@ class OrderPortal extends Component {
   fetchMenuItems = (idToken) => {
     fetchMenuApi(idToken)
       .then((res) => {
-        this.setState({ menuItems: res.data, isLoading: false });
+        this.setState({
+          menuItems: res.data,
+          originalMenuItems: res.data,
+          isLoading: false,
+        });
       })
       .catch((err) => {
         console.error(err.message);
@@ -35,7 +40,21 @@ class OrderPortal extends Component {
   };
 
   handleOnVegOnly = (e) => {
-    this.setState({ vegOnly: e.target.checked });
+    let vegOnly = e.target.checked;
+    let menuItems = JSON.parse(JSON.stringify(this.state.originalMenuItems));
+    if (vegOnly) {
+      let menu = menuItems.menu;
+      for (var key in menu) {
+        menu[key] = menu[key].filter(
+          (item) => item.type.toLowerCase() === "veg"
+        );
+        if (menu[key].length === 0) {
+          delete menu[key];
+        }
+      }
+      menuItems.menu = menu;
+    }
+    this.setState({ vegOnly, menuItems });
   };
 
   onItemRemove = (item) => {
