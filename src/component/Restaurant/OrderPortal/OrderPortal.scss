@@ -14,6 +14,11 @@
             color: #848484;
             font-size: 13px;
         }
+
+        svg {
+            width: 0.86em;
+            height: 0.86em;
+        }
     }
 
     .coupon-section {
@@ -61,6 +66,35 @@
                     }
                 }
             }
+        }
+    }
+
+    .browse-menu {
+        display: flex;
+        position: fixed;
+        left: 50%;
+        bottom: 12%;
+        -webkit-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        transform: translateX(-50%);
+        width: fit-content;
+        height: 40px;
+        border-radius: 30px;
+        background: #5d8ed5;
+        color: #fff;
+        box-shadow: 3px ​5px 8px rgba(0, 0, 0, 0.1);
+        padding: 14px;
+        align-items: center;
+
+        svg {
+            width: 0.86em;
+            height: 0.86em;
+        }
+
+        span {
+            margin-left: 0.4rem;
+            font-weight: 600;
+            font-size: .86rem;
         }
     }
 }

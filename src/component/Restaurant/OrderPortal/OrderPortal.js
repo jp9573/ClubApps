@@ -7,6 +7,7 @@ import StarIcon from "@material-ui/icons/Star";
 import CouponCard from "./CouponCard/CouponCard";
 import Switch from "@material-ui/core/Switch";
 import MenuItemCard from "./MenuItemCard/MenuItemCard";
+import RestaurantMenuIcon from "@material-ui/icons/RestaurantMenu";
 
 class OrderPortal extends Component {
   state = {
@@ -167,7 +168,7 @@ class OrderPortal extends Component {
             <span className="category">{category}</span>
           </div>
           <div className="rating-box d-flex flex-column">
-            <div className="d-flex align-self-center">
+            <div className="d-flex align-self-center align-items-center">
               <StarIcon />
               <span className="rating">{rating.value}</span>
             </div>
@@ -194,6 +195,11 @@ class OrderPortal extends Component {
             />
           </div>
           <div className="menu-sections">{this.getMenuSections(menu)}</div>
+        </div>
+
+        <div className="browse-menu">
+          <RestaurantMenuIcon style={{ fill: "#ffffff" }} />
+          <span>BROWSE MENU</span>
         </div>
       </div>
     );
