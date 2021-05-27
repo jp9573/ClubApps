@@ -241,3 +241,105 @@
         }
     }
 }
+
+reach-portal {
+    .top-section {
+        margin-top: 0.5rem;
+
+        img {
+            width: 100px;
+            margin-right: 0.5rem;
+        }
+
+        .title {
+            font-weight: 700;
+            font-size: 22px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+
+    .cart-menu {
+        .middle-section {
+            padding: 16px;
+            padding-bottom: 0px;
+
+            .cart-slide {
+                display: grid;
+                grid-template-columns: auto 3fr auto 1.5fr;
+                align-items: baseline;
+                margin-bottom: 15px;
+
+                .food-icon {
+                    margin-right: 0.5rem;
+                }
+
+                .item-name {
+                    line-height: 1.2rem;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+
+                .item-counter {
+                    height: 28px;
+                    background: #fff;
+                    border: 1px solid #e9e9eb;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-left: 16px;
+
+                    * {
+                        width: 26px;
+                    }
+
+                    .count {
+                        min-width: 2ch;
+                        text-align: center;
+                    }
+                }
+
+                .item-total {
+                    margin-left: 12px;
+                    font-size: 14px;
+                }
+            }
+
+            .total-count {
+                margin-right: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-top: 1px solid #dedede;
+                padding-top: 0.5rem;
+
+                .price {
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+
+    [data-rsbs-footer] {
+        box-shadow: none;
+    }
+
+    .order-button {
+        border: none;
+        outline: none;
+        box-shadow: none;
+        background: white;
+        color: rgb(96, 178, 70);
+        font-weight: 700;
+        padding: 0;
+
+        &:focus,
+        &:active {
+            background: none;
+            color: rgb(96, 178, 70);
+            box-shadow: unset !important;
+        }
+    }
+}
