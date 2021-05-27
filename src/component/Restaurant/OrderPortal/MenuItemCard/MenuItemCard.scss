@@ -1,0 +1,188 @@
+.menu-item-card {
+  padding: 0.8rem 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+
+  &.basic-card {
+    display: flex;
+    height: 120px;
+    width: 200px;
+    margin-right: 0.8rem;
+    margin-bottom: 1rem;
+
+    .title {
+      * {
+        flex-shrink: 0;
+      }
+
+      span {
+        margin-left: 0.5rem;
+        width: 100%;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        flex-shrink: unset;
+        font-weight: 600;
+      }
+    }
+
+    .description {
+      color: #848484;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .footer-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+
+      .add-button {
+        background: white;
+        border: white;
+        color: rgb(96, 178, 70);
+        font-weight: 700;
+        padding: 0px 12px;
+      }
+    }
+  }
+}
+
+.add-button {
+  background: white;
+  color: rgb(96, 178, 70);
+  font-weight: 700;
+
+  &:focus {
+    background: white;
+    color: rgb(96, 178, 70);
+  }
+}
+
+.add-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .count {
+    min-width: 2ch;
+    text-align: center;
+  }
+}
+
+.rich-card {
+  padding: 0.8rem 0.5rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+
+  &:not(&:first-child) {
+    margin-top: 0.5rem;
+  }
+
+  &:not(&:last-child) {
+    border-bottom: 1px solid #dedede;
+  }
+
+  .left-section {
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      svg {
+        margin-left: 0.5rem;
+        width: 18px;
+        height: 18px;
+      }
+
+      span {
+        margin-left: 0.2rem;
+        color: #fc8019;
+        font-size: 13px;
+        font-weight: 600;
+      }
+    }
+
+    .item-name {
+      width: 100%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      flex-shrink: unset;
+      font-weight: 700;
+      font-size: 18px;
+      margin: 0.3rem 0;
+    }
+
+    .price {
+      margin: 0.3rem 0;
+    }
+
+    .description {
+      color: #848484;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0.3rem 0;
+    }
+  }
+
+  .right-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+    }
+
+    .add-button {
+      border-radius: 4px;
+      min-width: 6rem;
+      border-color: #e1e1e1;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .customization {
+      color: #848484;
+      font-size: 11px;
+      margin: 0.3rem 0;
+    }
+  }
+}
+
+.food-icon {
+  height: 14px;
+  width: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.veg {
+    border: 2px solid #008d3d;
+
+    .round {
+      background: #008d3d;
+    }
+  }
+
+  &.non-veg {
+    border: 2px solid #8d2729;
+
+    .round {
+      background: #8d2729;
+    }
+  }
+
+  .round {
+    height: 6px;
+    width: 6px;
+    border-radius: 50%;
+  }
+}
