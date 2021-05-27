@@ -1,0 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Montserrat", sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-style: normal !important;
+    font-weight: 500 !important;
+    color: #000000 !important;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    &.hover {
+        cursor: pointer;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    &.focus {
+        cursor: pointer;
+    }
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: #c8c8c8;
+    cursor: pointer;
+    &.hover {
+        cursor: pointer;
+    }
+}
+
+#root {
+    height: 100%;
+}
+
+@import "node_modules/bootstrap/scss/bootstrap";

@@ -16,6 +16,8 @@ publish-dev:
     - docker:dind
   script:
     - echo "REACT_APP_BACKEND_API_URL=$TEST_REACT_APP_BACKEND_API_URL" >> .env
+    - echo "REACT_APP_LINKMANAGER_API_URL=$TEST_REACT_APP_LINKMANAGER_API_URL" >> .env
+    - echo "REACT_APP_LINK_RESOLVER_API_KEY=$TEST_REACT_APP_LINK_RESOLVER_API_KEY" >> .env
     - echo "REACT_APP_APPLINK_DOMAIN=$TEST_REACT_APP_APPLINK_DOMAIN" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
@@ -34,6 +36,8 @@ publish-test:
   script:
     - sed -i 's|YOURDOMAIN|applinks-gh42d3o.deww.in|g' nginx.conf
     - echo "REACT_APP_BACKEND_API_URL=$TEST_REACT_APP_BACKEND_API_URL" >> .env
+    - echo "REACT_APP_LINKMANAGER_API_URL=$TEST_REACT_APP_LINKMANAGER_API_URL" >> .env
+    - echo "REACT_APP_LINK_RESOLVER_API_KEY=$TEST_REACT_APP_LINK_RESOLVER_API_KEY" >> .env
     - echo "REACT_APP_APPLINK_DOMAIN=$TEST_REACT_APP_APPLINK_DOMAIN" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
@@ -54,6 +58,8 @@ publish-prod:
   script:
     - sed -i 's|YOURDOMAIN|applinks.deww.in|g' nginx.conf
     - echo "REACT_APP_BACKEND_API_URL=$PROD_REACT_APP_BACKEND_API_URL" >> .env
+    - echo "REACT_APP_LINKMANAGER_API_URL=$PROD_REACT_APP_LINKMANAGER_API_URL" >> .env
+    - echo "REACT_APP_LINK_RESOLVER_API_KEY=$PROD_REACT_APP_LINK_RESOLVER_API_KEY" >> .env
     - echo "REACT_APP_APPLINK_DOMAIN=$PROD_REACT_APP_APPLINK_DOMAIN" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
