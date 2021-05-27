@@ -1,10 +1,10 @@
 const axios = require("axios");
 
-const domain = process.env.REACT_APP_APPLINK_DOMAIN;
+const domain = process.env.REACT_APP_BACKEND_API_URL;
 const resolverDomain = process.env.REACT_APP_LINKMANAGER_API_URL;
 
 const axiosInstance = axios.create({
-  baseURL: `https://${domain}/api`,
+  baseURL: `${domain}api`,
 });
 
 export function urlResolver(token) {
