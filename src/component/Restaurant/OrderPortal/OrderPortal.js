@@ -8,6 +8,7 @@ import CouponCard from "./CouponCard/CouponCard";
 import Switch from "@material-ui/core/Switch";
 import MenuItemCard, { FoodTypeIcon } from "./MenuItemCard/MenuItemCard";
 import RestaurantMenuIcon from "@material-ui/icons/RestaurantMenu";
+import ShoppingBasketIcon from "@material-ui/icons/ShoppingBasket";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
 
@@ -21,6 +22,7 @@ class OrderPortal extends Component {
       isLoading: true,
       vegOnly: false,
       cartItems: [],
+      showCart: false,
       isBrowseMenuVisible: false,
       isCustomizationMenuVisible: false,
       currentMenuItem: undefined,
@@ -387,6 +389,10 @@ class OrderPortal extends Component {
     );
   };
 
+  openCartMenu = () => {
+    this.setState({ showCart: true });
+  };
+
   render() {
     const {
       idToken,
@@ -395,8 +401,19 @@ class OrderPortal extends Component {
       vegOnly,
       isBrowseMenuVisible,
       isCustomizationMenuVisible,
+      cartItems,
     } = this.state;
     const { name, category, rating, coupon, menu } = menuItems;
+
+    let cartTotal = 0;
+    cartItems.map((item) => {
+      cartTotal += item.price;
+      if (item.customization) {
+        for (let key in item.customization) {
+          item.customization[key].map((i) => (cartTotal += i.price));
+        }
+      }
+    });
 
     if (!idToken || idToken.length === 0) {
       return <p>Invalid session, please try again with valid link.</p>;
@@ -451,6 +468,21 @@ class OrderPortal extends Component {
           <RestaurantMenuIcon style={{ fill: "#ffffff" }} />
           <span>BROWSE MENU</span>
         </div>
+
+        {cartItems.length > 0 ? (
+          <div className="cart-items" onClick={this.openCartMenu}>
+            <span className="item-count">
+              {cartItems.length} Item{cartItems.length === 1 ? "" : "s"} |
+              &#8377; {cartTotal}
+            </span>
+            <button
+              className="btn btn-success view-cart-button"
+              onClick={this.openCartMenu}
+            >
+              VIEW CART <ShoppingBasketIcon style={{ fill: "#ffffff" }} />
+            </button>
+          </div>
+        ) : null}
 
         <BottomSheet
           open={isBrowseMenuVisible}
