@@ -4,4 +4,5 @@ import OrderPortal from "../component/Restaurant/OrderPortal/OrderPortal";
 export const routesMapping = {
   "/:token?": UrlRouter,
   "/restaurant/orderportal": OrderPortal,
+  "/hotelroom/food/orderPortal": OrderPortal,
 };
