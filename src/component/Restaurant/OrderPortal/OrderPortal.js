@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import qs from "query-string";
-import { fetchMenuApi } from "../../../common/Api";
+import { fetchMenuApi, submitOrderApi } from "../../../common/Api";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import "./OrderPortal.scss";
 import StarIcon from "@material-ui/icons/Star";
@@ -11,14 +11,21 @@ import RestaurantMenuIcon from "@material-ui/icons/RestaurantMenu";
 import ShoppingBasketIcon from "@material-ui/icons/ShoppingBasket";
 import AddIcon from "@material-ui/icons/Add";
 import RemoveIcon from "@material-ui/icons/Remove";
+import ListIcon from "@material-ui/icons/List";
 import { BottomSheet } from "react-spring-bottom-sheet";
 import "react-spring-bottom-sheet/dist/style.css";
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 class OrderPortal extends Component {
   constructor(props) {
     super(props);
     this.state = {
       idToken: "fetching",
+      specialRequestText: "",
       menuItems: {},
       originalMenuItems: {},
       isLoading: true,
@@ -30,6 +37,7 @@ class OrderPortal extends Component {
       currentMenuItem: undefined,
       currentCustomizationIndex: undefined,
       currentCustomizationSelection: undefined,
+      showOrderPlacedModal: false,
     };
     this.sectionRefs = {};
   }
@@ -274,6 +282,7 @@ class OrderPortal extends Component {
             ...this.state.cartItems,
             {
               ...this.state.currentMenuItem,
+              originalCustomization: this.state.currentMenuItem.customization,
               customization: { ...this.state.currentCustomizationSelection },
             },
           ],
@@ -399,7 +408,7 @@ class OrderPortal extends Component {
   };
 
   getCartMenuJSX = () => {
-    const { cartItems } = this.state;
+    const { cartItems, specialRequestText } = this.state;
     let totalCartAmount = 0;
 
     const getCartItemsJSX = (items) => {
@@ -469,9 +478,84 @@ class OrderPortal extends Component {
             <span>Total</span>{" "}
             <span className="price">&#8377; {totalCartAmount}</span>
           </div>
+          <div className="requirements">
+            <ListIcon style={{ fill: "#686b78" }} />
+            <input
+              type="text"
+              name="request"
+              placeholder="Any restaurant request? We will try our best to convey it"
+              value={specialRequestText}
+              onChange={(e) =>
+                this.setState({ specialRequestText: e.target.value })
+              }
+            />
+          </div>
         </div>
       </>
     );
+  };
+
+  submitOrder = () => {
+    const { cartItems, idToken, specialRequestText } = this.state;
+    let itemsById = {};
+    let orderItems = [];
+    cartItems.forEach((item) => {
+      if (itemsById.hasOwnProperty(item.id)) {
+        itemsById[item.id].push(item);
+      } else {
+        itemsById[item.id] = [item];
+      }
+    });
+
+    for (let key in itemsById) {
+      let items = itemsById[key];
+      let item = items[0];
+      let itemTotal = 0;
+
+      if (item.customization === null) {
+        orderItems.push({
+          Id: key,
+          Name: item.name,
+          Price: item.price,
+          Quantity: items.length,
+        });
+      } else {
+        items.map((item) => {
+          let Customizations = [];
+          const { customization, originalCustomization } = item;
+          for (let key in customization) {
+            Customizations.push({
+              Name: originalCustomization[key].step,
+              SelectedOptions: customization[key].map((cItem) => {
+                return {
+                  Id: cItem.id,
+                  Name: cItem.name,
+                  Price: cItem.price,
+                };
+              }),
+            });
+          }
+          orderItems.push({
+            Id: key,
+            Name: item.name,
+            Price: item.price,
+            Quantity: 1,
+            Customizations,
+          });
+        });
+      }
+    }
+
+    submitOrderApi(idToken, {
+      SpecialRequest: specialRequestText,
+      OrderedItems: orderItems,
+    })
+      .then((res) => {
+        this.setState({ showOrderPlacedModal: true });
+      })
+      .catch((err) => {
+        console.error(err.message);
+      });
   };
 
   render() {
@@ -484,6 +568,7 @@ class OrderPortal extends Component {
       isCustomizationMenuVisible,
       cartItems,
       showCart,
+      showOrderPlacedModal,
     } = this.state;
     const { name, logoPath, category, rating, coupon, menu } = menuItems;
 
@@ -617,6 +702,21 @@ class OrderPortal extends Component {
         >
           <div className="cart-menu">{this.getCartMenuJSX()}</div>
         </BottomSheet>
+
+        <Dialog
+          open={showOrderPlacedModal}
+          onClose={() => this.setState({ showOrderPlacedModal: false })}
+          disableBackdropClick
+        >
+          <DialogTitle className="order-place-dialog-title">
+            <CheckCircleIcon style={{ fill: "#60b246" }} /> Success
+          </DialogTitle>
+          <DialogContent className="order-place-dialog-content">
+            <DialogContentText>
+              Your order has been placed successfully.
+            </DialogContentText>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

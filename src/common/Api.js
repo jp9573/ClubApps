@@ -32,3 +32,11 @@ export function fetchMenuApi(token) {
     },
   });
 }
+
+export function submitOrderApi(token, data) {
+  return axiosInstance.post("/FoodOrderSubmissionProvider", data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
