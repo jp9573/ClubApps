@@ -83,6 +83,9 @@ class Ticket extends Component {
       additionalFields,
     } = ticketObj;
 
+    const disableRightArrow = currentTicketIndex === ticketDetails.length - 1;
+    const disableLeftArrow = currentTicketIndex === 0;
+
     const { ticketTextLabel, descriptionTextLabel, dateTextLabel } =
       this.ticketTypeHeaderMapping[
         ticketType === "Event/Show" ? "Event/Show" : "Flight"
@@ -131,6 +134,7 @@ class Ticket extends Component {
           >
             {hasMultipleTicket ? (
               <img
+                className={`${disableLeftArrow ? "disable-arrow" : ""}`}
                 src={leftArrowIcon}
                 alt="Left Arrow"
                 onClick={onPrevTicket}
@@ -141,6 +145,7 @@ class Ticket extends Component {
             </div>
             {hasMultipleTicket ? (
               <img
+                className={`${disableRightArrow ? "disable-arrow" : ""}`}
                 src={rightArrowIcon}
                 alt="Right Arrow"
                 onClick={onNextTicket}

@@ -55,10 +55,19 @@
   background: white;
   color: rgb(96, 178, 70);
   font-weight: 700;
+  position: relative;
 
   &:focus {
     background: white;
     color: rgb(96, 178, 70);
+  }
+
+  svg {
+    width: 0.48em;
+    height: 0.48em;
+    position: absolute;
+    right: 2px;
+    top: 2px;
   }
 }
 
