@@ -38,6 +38,7 @@ class OrderPortal extends Component {
       currentCustomizationIndex: undefined,
       currentCustomizationSelection: undefined,
       showOrderPlacedModal: false,
+      showLoadingModal: false,
     };
     this.sectionRefs = {};
   }
@@ -426,12 +427,16 @@ class OrderPortal extends Component {
         let items = itemsById[key];
         let item = items[0];
         let itemTotal = 0;
+        let customizationText = "";
 
         items.map((i) => {
           itemTotal += i.price;
           if (i.customization) {
             for (let key in i.customization) {
-              i.customization[key].map((j) => (itemTotal += j.price));
+              i.customization[key].map((j) => {
+                customizationText += j.name + ", ";
+                itemTotal += j.price;
+              });
             }
           }
         });
@@ -440,7 +445,20 @@ class OrderPortal extends Component {
         let itemJSX = (
           <div className="cart-slide" key={key}>
             <FoodTypeIcon isVeg={item.type.toLowerCase() === "veg"} />
-            <span className="item-name">{item.name}</span>
+            <span className="item-name">
+              {item.name}
+              {customizationText ? (
+                <>
+                  <br />
+                  <span className="customization">
+                    {customizationText.substring(
+                      0,
+                      customizationText.length - 2
+                    )}
+                  </span>
+                </>
+              ) : null}
+            </span>
             <div className="item-counter">
               <RemoveIcon
                 style={{ fill: "#60B246" }}
@@ -496,6 +514,10 @@ class OrderPortal extends Component {
   };
 
   submitOrder = () => {
+    this.setState({
+      showLoadingModal: true,
+      showCart: false,
+    });
     const { cartItems, idToken, specialRequestText } = this.state;
     let itemsById = {};
     let orderItems = [];
@@ -551,10 +573,14 @@ class OrderPortal extends Component {
       OrderedItems: orderItems,
     })
       .then((res) => {
-        this.setState({ showOrderPlacedModal: true });
+        this.setState({ showOrderPlacedModal: true, showLoadingModal: false });
       })
       .catch((err) => {
         console.error(err.message);
+        this.setState({
+          showLoadingModal: false,
+          showCart: true,
+        });
       });
   };
 
@@ -569,6 +595,7 @@ class OrderPortal extends Component {
       cartItems,
       showCart,
       showOrderPlacedModal,
+      showLoadingModal,
     } = this.state;
     const { name, logoPath, category, rating, coupon, menu } = menuItems;
 
@@ -715,6 +742,21 @@ class OrderPortal extends Component {
             <DialogContent className="order-place-dialog-content">
               <DialogContentText>
                 Your order has been placed successfully.
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={showLoadingModal}
+            onClose={() => this.setState({ showLoadingModal: false })}
+            disableBackdropClick
+          >
+            <DialogTitle className="loading-dialog-title">
+              <CircularProgress size={25} /> Please wait
+            </DialogTitle>
+            <DialogContent className="order-place-dialog-content">
+              <DialogContentText>
+                Give us a moment, we are placing your oder.
               </DialogContentText>
             </DialogContent>
           </Dialog>
