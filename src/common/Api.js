@@ -40,3 +40,11 @@ export function submitOrderApi(token, data) {
     },
   });
 }
+
+export function getTicketInfoApi(token, eventId) {
+  return axiosInstance.get(`/TicketProvider?eventId=${eventId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
