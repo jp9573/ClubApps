@@ -15,7 +15,8 @@ export const FoodTypeIcon = (props) => {
 const AddButton = (props) => {
   return props.cartItemCount === 0 ? (
     <button className="btn btn-success add-button" onClick={props.onItemAdd}>
-      ADD
+      ADD{" "}
+      {props.hasCustomization ? <AddIcon style={{ fill: "#60B246" }} /> : null}
     </button>
   ) : (
     <div className="add-button-container">
@@ -78,6 +79,7 @@ const RichCard = (props) => {
           cartItemCount={cartItemCount}
           onItemRemove={onItemRemove}
           onItemAdd={onItemAdd}
+          hasCustomization={customization !== null}
         />
         {customization ? (
           <span className="customization">Customizable</span>

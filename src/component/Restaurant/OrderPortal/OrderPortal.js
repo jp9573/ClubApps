@@ -38,6 +38,7 @@ class OrderPortal extends Component {
       currentCustomizationIndex: undefined,
       currentCustomizationSelection: undefined,
       showOrderPlacedModal: false,
+      showLoadingModal: false,
     };
     this.sectionRefs = {};
   }
@@ -496,6 +497,10 @@ class OrderPortal extends Component {
   };
 
   submitOrder = () => {
+    this.setState({
+      showLoadingModal: true,
+      showCart: false,
+    });
     const { cartItems, idToken, specialRequestText } = this.state;
     let itemsById = {};
     let orderItems = [];
@@ -551,10 +556,14 @@ class OrderPortal extends Component {
       OrderedItems: orderItems,
     })
       .then((res) => {
-        this.setState({ showOrderPlacedModal: true });
+        this.setState({ showOrderPlacedModal: true, showLoadingModal: false });
       })
       .catch((err) => {
         console.error(err.message);
+        this.setState({
+          showLoadingModal: false,
+          showCart: true,
+        });
       });
   };
 
@@ -569,6 +578,7 @@ class OrderPortal extends Component {
       cartItems,
       showCart,
       showOrderPlacedModal,
+      showLoadingModal,
     } = this.state;
     const { name, logoPath, category, rating, coupon, menu } = menuItems;
 
@@ -715,6 +725,21 @@ class OrderPortal extends Component {
             <DialogContent className="order-place-dialog-content">
               <DialogContentText>
                 Your order has been placed successfully.
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={showLoadingModal}
+            onClose={() => this.setState({ showLoadingModal: false })}
+            disableBackdropClick
+          >
+            <DialogTitle className="loading-dialog-title">
+              <CircularProgress size={25} /> Please wait
+            </DialogTitle>
+            <DialogContent className="order-place-dialog-content">
+              <DialogContentText>
+                Give us a moment, we are placing your oder.
               </DialogContentText>
             </DialogContent>
           </Dialog>

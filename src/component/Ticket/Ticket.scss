@@ -63,7 +63,7 @@
       }
 
       .dash-border {
-        border: 1px dashed #000000;
+        border: 0.1px dashed #000000;
         position: absolute;
         left: 15px;
         right: 15px;
@@ -87,6 +87,7 @@
     }
 
     .ticket-details {
+      margin-top: -1px;
       background: white;
       border-radius: 15px;
       border-top-left-radius: 0;

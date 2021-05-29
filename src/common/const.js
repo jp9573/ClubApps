@@ -6,5 +6,6 @@ export const routesMapping = {
   "/:token?": UrlRouter,
   "/restaurant/orderportal": OrderPortal,
   "/hotelroom/food/orderPortal": OrderPortal,
+  "/grocery/orderPortal": OrderPortal,
   "/ticket/:eventId?": Ticket,
 };
