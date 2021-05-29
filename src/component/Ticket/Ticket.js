@@ -5,6 +5,8 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import qs from "query-string";
 import QRCode from "qrcode.react";
 import logo from "../../asset/ticket/logo.svg";
+import leftArrowIcon from "../../asset/ticket/leftArrow.svg";
+import rightArrowIcon from "../../asset/ticket/rightArrow.svg";
 
 class Ticket extends Component {
   state = {
@@ -74,11 +76,49 @@ class Ticket extends Component {
     const { ticketTextLabel, descriptionTextLabel, dateTextLabel } =
       this.ticketTypeHeaderMapping[ticketType];
 
+    const onPrevTicket = () => {
+      let { currentTicketIndex } = this.state;
+      if (currentTicketIndex > 0) {
+        currentTicketIndex -= 1;
+        this.setState({ currentTicketIndex });
+      }
+    };
+
+    const onNextTicket = () => {
+      let { currentTicketIndex, ticketDetails } = this.state;
+      if (currentTicketIndex < ticketDetails.length - 1) {
+        currentTicketIndex += 1;
+        this.setState({ currentTicketIndex });
+      }
+    };
+
     return (
       <>
         <div className="upper-section">
-          <div className="qr-code">
-            <QRCode value={qrCodeText} size={150} />
+          <div
+            className={`navigation-content ${
+              hasMultipleTicket
+                ? "justify-content-between"
+                : "justify-content-center"
+            }`}
+          >
+            {hasMultipleTicket ? (
+              <img
+                src={leftArrowIcon}
+                alt="Left Arrow"
+                onClick={onPrevTicket}
+              />
+            ) : null}
+            <div className="qr-code">
+              <QRCode value={qrCodeText} size={150} />
+            </div>
+            {hasMultipleTicket ? (
+              <img
+                src={rightArrowIcon}
+                alt="Right Arrow"
+                onClick={onNextTicket}
+              />
+            ) : null}
           </div>
           <span className="ticket-number">{ticketNumber}</span>
         </div>
@@ -101,7 +141,7 @@ class Ticket extends Component {
             <span className="label">{descriptionTextLabel}</span>
             <span className="description">{ticketProviderInfo}</span>
           </div>
-          <div className="d-flex">
+          <div className="d-grid location-container">
             <div className="group">
               <span className="label">{dateTextLabel}</span>
               <span className="date">{eventDateInfo}</span>

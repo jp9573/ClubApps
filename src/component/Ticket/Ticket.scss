@@ -4,6 +4,7 @@
   padding: 0.5rem 1rem 1rem 1rem;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 
   .ticket-card {
     z-index: 1;
@@ -20,6 +21,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+
+      .navigation-content {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
       .ticket-number {
         font-size: 24px;
@@ -39,7 +47,7 @@
       &:after {
         content: "";
         position: absolute;
-        bottom: 3px;
+        bottom: 2px;
         border-radius: 100%;
         width: 30px;
         height: 30px;
@@ -87,6 +95,35 @@
       padding: 10px 20px 10px 20px;
       display: flex;
       flex-direction: column;
+
+      .group {
+        display: flex;
+        flex-direction: column;
+        margin-top: 22px;
+
+        .label {
+          font-weight: 300;
+          font-size: 14px;
+          line-height: 17px;
+          color: #929191;
+          margin-bottom: 0.2rem;
+        }
+
+        .name {
+          font-size: 24px;
+          line-height: 28px;
+        }
+
+        .ticket-info {
+          font-size: 14px;
+          line-height: 17px;
+        }
+      }
+
+      .location-container {
+        grid-template-columns: 0.7fr 1fr;
+        grid-column-gap: 16px;
+      }
     }
   }
 }
