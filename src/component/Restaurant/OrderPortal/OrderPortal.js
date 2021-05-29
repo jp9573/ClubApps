@@ -595,128 +595,130 @@ class OrderPortal extends Component {
     }
 
     return (
-      <div className="order-portal">
-        <div className="top-section d-flex flex-wrap justify-content-between align-items-center">
-          <div className="d-flex flex-column">
-            <span className="title">{name}</span>
-            <span className="category">{category}</span>
-          </div>
-          <div className="rating-box d-flex flex-column">
-            <div className="d-flex align-self-center align-items-center">
-              <StarIcon />
-              <span className="rating">{rating.value}</span>
-            </div>
-            <span className="impressions text-center">
-              {rating.impressions}
-            </span>
-          </div>
-        </div>
-
-        {coupon ? (
-          <div className="coupon-section">
-            <CouponCard {...coupon} />
-          </div>
-        ) : null}
-
-        <div className="main-section">
-          <div className="grey-line"></div>
-          <div className="veg-only d-flex align-items-center">
-            <span>Veg Only</span>
-            <Switch
-              checked={vegOnly}
-              onChange={this.handleOnVegOnly}
-              name="vegOnly"
-            />
-          </div>
-          <div className="menu-sections">{this.getMenuSections(menu)}</div>
-        </div>
-
-        <div className="browse-menu" onClick={this.openBrowseMenu}>
-          <RestaurantMenuIcon style={{ fill: "#ffffff" }} />
-          <span>BROWSE MENU</span>
-        </div>
-
-        {cartItems.length > 0 ? (
-          <div className="cart-items" onClick={this.openCartMenu}>
-            <span className="item-count">
-              {cartItems.length} Item{cartItems.length === 1 ? "" : "s"} |
-              &#8377; {cartTotal}
-            </span>
-            <button
-              className="btn btn-success view-cart-button"
-              onClick={this.openCartMenu}
-            >
-              VIEW CART <ShoppingBasketIcon style={{ fill: "#ffffff" }} />
-            </button>
-          </div>
-        ) : null}
-
-        <BottomSheet
-          className="browse-categories-bottom-sheet"
-          open={isBrowseMenuVisible}
-          onDismiss={() => {
-            this.setState({ isBrowseMenuVisible: false });
-          }}
-          snapPoints={({ minHeight }) => minHeight}
-        >
-          <div className="browse-category-list">
-            {this.getBottomSheetCategoriesJSX()}
-          </div>
-        </BottomSheet>
-
-        <BottomSheet
-          className="customization-bottom-sheet"
-          open={isCustomizationMenuVisible}
-          onDismiss={() => {
-            this.setState({ isCustomizationMenuVisible: false });
-          }}
-          snapPoints={({ minHeight }) => minHeight}
-        >
-          <div className="customization-menu-list">
-            {this.getCustomizationMenuJSX()}
-          </div>
-        </BottomSheet>
-
-        <BottomSheet
-          open={showCart}
-          onDismiss={() => {
-            this.setState({ showCart: false });
-          }}
-          snapPoints={({ minHeight }) => minHeight}
-          header={
-            <div className="top-section d-flex align-items-center">
-              {logoPath ? <img src={logoPath} alt="Logo" /> : null}
+      <div className="container">
+        <div className="order-portal">
+          <div className="top-section d-flex flex-wrap justify-content-between align-items-center">
+            <div className="d-flex flex-column">
               <span className="title">{name}</span>
+              <span className="category">{category}</span>
             </div>
-          }
-          footer={
-            <div className="bottom-section d-flex justify-content-center align-items-center">
+            <div className="rating-box d-flex flex-column">
+              <div className="d-flex align-self-center align-items-center">
+                <StarIcon />
+                <span className="rating">{rating.value}</span>
+              </div>
+              <span className="impressions text-center">
+                {rating.impressions}
+              </span>
+            </div>
+          </div>
+
+          {coupon ? (
+            <div className="coupon-section">
+              <CouponCard {...coupon} />
+            </div>
+          ) : null}
+
+          <div className="main-section">
+            <div className="grey-line"></div>
+            <div className="veg-only d-flex align-items-center">
+              <span>Veg Only</span>
+              <Switch
+                checked={vegOnly}
+                onChange={this.handleOnVegOnly}
+                name="vegOnly"
+              />
+            </div>
+            <div className="menu-sections">{this.getMenuSections(menu)}</div>
+          </div>
+
+          <div className="browse-menu" onClick={this.openBrowseMenu}>
+            <RestaurantMenuIcon style={{ fill: "#ffffff" }} />
+            <span>BROWSE MENU</span>
+          </div>
+
+          {cartItems.length > 0 ? (
+            <div className="cart-items" onClick={this.openCartMenu}>
+              <span className="item-count">
+                {cartItems.length} Item{cartItems.length === 1 ? "" : "s"} |
+                &#8377; {cartTotal}
+              </span>
               <button
-                className="btn btn-success order-button"
-                onClick={this.submitOrder}
+                className="btn btn-success view-cart-button"
+                onClick={this.openCartMenu}
               >
-                ORDER NOW
+                VIEW CART <ShoppingBasketIcon style={{ fill: "#ffffff" }} />
               </button>
             </div>
-          }
-        >
-          <div className="cart-menu">{this.getCartMenuJSX()}</div>
-        </BottomSheet>
+          ) : null}
 
-        <Dialog
-          open={showOrderPlacedModal}
-          onClose={() => this.setState({ showOrderPlacedModal: false })}
-          disableBackdropClick
-        >
-          <DialogTitle className="order-place-dialog-title">
-            <CheckCircleIcon style={{ fill: "#60b246" }} /> Success
-          </DialogTitle>
-          <DialogContent className="order-place-dialog-content">
-            <DialogContentText>
-              Your order has been placed successfully.
-            </DialogContentText>
-          </DialogContent>
-        </Dialog>
+          <BottomSheet
+            className="browse-categories-bottom-sheet"
+            open={isBrowseMenuVisible}
+            onDismiss={() => {
+              this.setState({ isBrowseMenuVisible: false });
+            }}
+            snapPoints={({ minHeight }) => minHeight}
+          >
+            <div className="browse-category-list">
+              {this.getBottomSheetCategoriesJSX()}
+            </div>
+          </BottomSheet>
+
+          <BottomSheet
+            className="customization-bottom-sheet"
+            open={isCustomizationMenuVisible}
+            onDismiss={() => {
+              this.setState({ isCustomizationMenuVisible: false });
+            }}
+            snapPoints={({ minHeight }) => minHeight}
+          >
+            <div className="customization-menu-list">
+              {this.getCustomizationMenuJSX()}
+            </div>
+          </BottomSheet>
+
+          <BottomSheet
+            open={showCart}
+            onDismiss={() => {
+              this.setState({ showCart: false });
+            }}
+            snapPoints={({ minHeight }) => minHeight}
+            header={
+              <div className="top-section d-flex align-items-center">
+                {logoPath ? <img src={logoPath} alt="Logo" /> : null}
+                <span className="title">{name}</span>
+              </div>
+            }
+            footer={
+              <div className="bottom-section d-flex justify-content-center align-items-center">
+                <button
+                  className="btn btn-success order-button"
+                  onClick={this.submitOrder}
+                >
+                  ORDER NOW
+                </button>
+              </div>
+            }
+          >
+            <div className="cart-menu">{this.getCartMenuJSX()}</div>
+          </BottomSheet>
+
+          <Dialog
+            open={showOrderPlacedModal}
+            onClose={() => this.setState({ showOrderPlacedModal: false })}
+            disableBackdropClick
+          >
+            <DialogTitle className="order-place-dialog-title">
+              <CheckCircleIcon style={{ fill: "#60b246" }} /> Success
+            </DialogTitle>
+            <DialogContent className="order-place-dialog-content">
+              <DialogContentText>
+                Your order has been placed successfully.
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     );
   }
