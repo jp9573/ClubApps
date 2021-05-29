@@ -427,12 +427,16 @@ class OrderPortal extends Component {
         let items = itemsById[key];
         let item = items[0];
         let itemTotal = 0;
+        let customizationText = "";
 
         items.map((i) => {
           itemTotal += i.price;
           if (i.customization) {
             for (let key in i.customization) {
-              i.customization[key].map((j) => (itemTotal += j.price));
+              i.customization[key].map((j) => {
+                customizationText += j.name + ", ";
+                itemTotal += j.price;
+              });
             }
           }
         });
@@ -441,7 +445,20 @@ class OrderPortal extends Component {
         let itemJSX = (
           <div className="cart-slide" key={key}>
             <FoodTypeIcon isVeg={item.type.toLowerCase() === "veg"} />
-            <span className="item-name">{item.name}</span>
+            <span className="item-name">
+              {item.name}
+              {customizationText ? (
+                <>
+                  <br />
+                  <span className="customization">
+                    {customizationText.substring(
+                      0,
+                      customizationText.length - 2
+                    )}
+                  </span>
+                </>
+              ) : null}
+            </span>
             <div className="item-counter">
               <RemoveIcon
                 style={{ fill: "#60B246" }}

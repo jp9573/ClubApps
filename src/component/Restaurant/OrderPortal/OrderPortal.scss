@@ -281,18 +281,24 @@ reach-portal {
             .cart-slide {
                 display: grid;
                 grid-template-columns: auto 3fr auto 1.5fr;
-                align-items: baseline;
+                align-items: flex-start;
                 margin-bottom: 15px;
 
                 .food-icon {
                     margin-right: 0.5rem;
+                    margin-top: 0.2rem;
                 }
 
                 .item-name {
                     line-height: 1.2rem;
                     text-overflow: ellipsis;
                     overflow: hidden;
-                    white-space: nowrap;
+                    // white-space: nowrap;
+
+                    .customization {
+                        color: #848484;
+                        font-size: 13px;
+                    }
                 }
 
                 .item-counter {
@@ -317,11 +323,11 @@ reach-portal {
                 .item-total {
                     margin-left: 12px;
                     font-size: 14px;
+                    text-align: right;
                 }
             }
 
             .total-count {
-                margin-right: 12px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -408,7 +414,7 @@ reach-portal {
         align-items: center;
 
         div {
-            margin-right: .5rem;
+            margin-right: 0.5rem;
         }
     }
 }
