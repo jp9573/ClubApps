@@ -7,6 +7,9 @@ import QRCode from "qrcode.react";
 import logo from "../../asset/ticket/logo.svg";
 import leftArrowIcon from "../../asset/ticket/leftArrow.svg";
 import rightArrowIcon from "../../asset/ticket/rightArrow.svg";
+import flight from "../../asset/ticket/flight.svg";
+import bus from "../../asset/ticket/bus.svg";
+import train from "../../asset/ticket/train.svg";
 
 class Ticket extends Component {
   state = {
@@ -28,6 +31,12 @@ class Ticket extends Component {
       descriptionTextLabel: "Provider",
       dateTextLabel: "Departure Time",
     },
+  };
+
+  vehicleIconMapping = {
+    Flight: flight,
+    Train: train,
+    Bus: bus,
   };
 
   componentDidMount() {
@@ -71,10 +80,13 @@ class Ticket extends Component {
       ticketProviderInfo,
       eventDateInfo,
       location,
+      additionalFields,
     } = ticketObj;
 
     const { ticketTextLabel, descriptionTextLabel, dateTextLabel } =
-      this.ticketTypeHeaderMapping[ticketType];
+      this.ticketTypeHeaderMapping[
+        ticketType === "Event/Show" ? "Event/Show" : "Flight"
+      ];
 
     const onPrevTicket = () => {
       let { currentTicketIndex } = this.state;
@@ -90,6 +102,21 @@ class Ticket extends Component {
         currentTicketIndex += 1;
         this.setState({ currentTicketIndex });
       }
+    };
+
+    const getTicketInfoJSX = () => {
+      return (
+        <>
+          <div className="group">
+            <span className="label">{ticketTextLabel}</span>
+            <span className="ticket-info">{ticketInfo}</span>
+          </div>
+          <div className="group">
+            <span className="label">{descriptionTextLabel}</span>
+            <span className="description">{ticketProviderInfo}</span>
+          </div>
+        </>
+      );
     };
 
     return (
@@ -133,14 +160,21 @@ class Ticket extends Component {
             <span className="label">Name</span>
             <span className="name">{name}</span>
           </div>
-          <div className="group">
-            <span className="label">{ticketTextLabel}</span>
-            <span className="ticket-info">{ticketInfo}</span>
-          </div>
-          <div className="group">
-            <span className="label">{descriptionTextLabel}</span>
-            <span className="description">{ticketProviderInfo}</span>
-          </div>
+          {additionalFields ? (
+            <div className="additional-fields">
+              <div className="left-part">{getTicketInfoJSX()}</div>
+              <div className="right-part">
+                <span className="source">{additionalFields.Source}</span>
+                <img src={this.vehicleIconMapping[ticketType]} alt="Vehicle" />
+                <span className="destination">
+                  {additionalFields.Destination}
+                </span>
+                <div className="dash-border"></div>
+              </div>
+            </div>
+          ) : (
+            getTicketInfoJSX()
+          )}
           <div className="d-grid location-container">
             <div className="group">
               <span className="label">{dateTextLabel}</span>

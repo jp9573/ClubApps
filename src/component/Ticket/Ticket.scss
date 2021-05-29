@@ -25,7 +25,6 @@
       .navigation-content {
         width: 100%;
         display: flex;
-        justify-content: space-between;
         align-items: center;
       }
 
@@ -96,6 +95,55 @@
       display: flex;
       flex-direction: column;
 
+      .additional-fields {
+        display: grid;
+        grid-template-columns: auto auto;
+
+        .left-part {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: space-between;
+        }
+
+        .right-part {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+
+          span,
+          img {
+            margin-top: 22px;
+            z-index: 1;
+          }
+
+          span {
+            background: #000000;
+            border-radius: 12px;
+            color: white;
+            padding: 2px 17px;
+            max-width: 170px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+
+          img {
+            width: 34px;
+            height: 34px;
+          }
+
+          .dash-border {
+            border: 0.1px dashed;
+            position: absolute;
+            top: 22px;
+            bottom: 0;
+            z-index: 0;
+          }
+        }
+      }
+
       .group {
         display: flex;
         flex-direction: column;
@@ -123,6 +171,14 @@
       .location-container {
         grid-template-columns: 0.7fr 1fr;
         grid-column-gap: 16px;
+
+        .view-map {
+          font-size: 12px;
+          line-height: 14px;
+          color: #cf2d48;
+          text-decoration: none;
+          margin-top: 3px;
+        }
       }
     }
   }
