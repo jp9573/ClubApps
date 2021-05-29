@@ -1,5 +1,92 @@
 .ticket-container {
   background-image: url("../../asset/ticket/background.svg");
   height: 100%;
-  padding: 1rem;
+  padding: 0.5rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+
+  .ticket-card {
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+
+    .upper-section {
+      background: white;
+      border-radius: 15px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 18px 20px 10px 20px;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .ticket-number {
+        font-size: 24px;
+        line-height: 28px;
+        margin-top: 0.2rem;
+      }
+    }
+
+    .ticket-count {
+      padding: 1rem 0;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      display: inline-block;
+
+      &:before,
+      &:after {
+        content: "";
+        position: absolute;
+        bottom: 3px;
+        border-radius: 100%;
+        width: 30px;
+        height: 30px;
+        box-shadow: 0px 0px 0px 200px #ffffff;
+        z-index: -1;
+      }
+      &:before {
+        left: unset;
+        right: -20px;
+      }
+      &:after {
+        left: -20px;
+        right: unset;
+      }
+
+      .dash-border {
+        border: 1px dashed #000000;
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        top: 14px;
+      }
+
+      .text {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        top: 3px;
+
+        background: white;
+        border: 1px solid #929191;
+        border-radius: 18px;
+        padding: 3px 11px;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 14px;
+      }
+    }
+
+    .ticket-details {
+      background: white;
+      border-radius: 15px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      padding: 10px 20px 10px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+  }
 }

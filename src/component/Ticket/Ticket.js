@@ -3,6 +3,7 @@ import "./Ticket.scss";
 import { getTicketInfoApi } from "../../common/Api";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import qs from "query-string";
+import QRCode from "qrcode.react";
 import logo from "../../asset/ticket/logo.svg";
 
 class Ticket extends Component {
@@ -12,6 +13,19 @@ class Ticket extends Component {
     ticketDetails: undefined,
     isLoading: true,
     currentTicketIndex: 0,
+  };
+
+  ticketTypeHeaderMapping = {
+    "Event/Show": {
+      ticketTextLabel: "Ticket/seat",
+      descriptionTextLabel: "Event /Show",
+      dateTextLabel: "Date",
+    },
+    Flight: {
+      ticketTextLabel: "Seat",
+      descriptionTextLabel: "Provider",
+      dateTextLabel: "Departure Time",
+    },
   };
 
   componentDidMount() {
@@ -44,12 +58,70 @@ class Ticket extends Component {
   getTicketCardJSX = () => {
     const { ticketDetails, currentTicketIndex } = this.state;
     const hasMultipleTicket = ticketDetails.length > 1;
+    const totalTicketCount = ticketDetails.length;
     const ticketObj = ticketDetails[currentTicketIndex];
-    const { ticketNumber } = ticketObj;
+    const {
+      ticketNumber,
+      qrCodeText,
+      name,
+      ticketType,
+      ticketInfo,
+      ticketProviderInfo,
+      eventDateInfo,
+      location,
+    } = ticketObj;
+
+    const { ticketTextLabel, descriptionTextLabel, dateTextLabel } =
+      this.ticketTypeHeaderMapping[ticketType];
 
     return (
       <>
-        <span className="ticket-number">{ticketNumber}</span>
+        <div className="upper-section">
+          <div className="qr-code">
+            <QRCode value={qrCodeText} size={150} />
+          </div>
+          <span className="ticket-number">{ticketNumber}</span>
+        </div>
+        <span className="ticket-count">
+          <div className="dash-border"></div>
+          <span className="text">
+            Ticket {currentTicketIndex + 1} of {totalTicketCount}
+          </span>
+        </span>
+        <div className="ticket-details">
+          <div className="group">
+            <span className="label">Name</span>
+            <span className="name">{name}</span>
+          </div>
+          <div className="group">
+            <span className="label">{ticketTextLabel}</span>
+            <span className="ticket-info">{ticketInfo}</span>
+          </div>
+          <div className="group">
+            <span className="label">{descriptionTextLabel}</span>
+            <span className="description">{ticketProviderInfo}</span>
+          </div>
+          <div className="d-flex">
+            <div className="group">
+              <span className="label">{dateTextLabel}</span>
+              <span className="date">{eventDateInfo}</span>
+            </div>
+            <div className="group">
+              <span className="label">Location</span>
+              <span className="location">
+                {location.name} <br />
+                {location.address}
+              </span>
+              <a
+                href={`https://maps.google.com/?q=${location.latitude},${location.longitude}`}
+                className="view-map"
+                target="_blank"
+              >
+                View Map
+              </a>
+            </div>
+          </div>
+        </div>
       </>
     );
   };
