@@ -26,6 +26,10 @@
         width: 100%;
         display: flex;
         align-items: center;
+
+        .disable-arrow {
+          opacity: 0.5;
+        }
       }
 
       .ticket-number {
