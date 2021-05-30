@@ -18,6 +18,11 @@
     .top-row {
       display: flex;
       justify-content: space-between;
+
+      img {
+        width: 40px;
+        height: 40px;
+      }
     }
 
     .phone-content {
@@ -63,6 +68,12 @@
         font-weight: 300;
         text-overflow: ellipsis;
         border-bottom: 1px solid #c4c4c4;
+      }
+
+      .error {
+        font-size: 13px;
+        color: red;
+        margin-top: 0.1rem;
       }
     }
 
