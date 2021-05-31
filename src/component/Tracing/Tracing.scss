@@ -81,4 +81,62 @@
       }
     }
   }
+
+  .footer-section {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .custom-destination-holder {
+      display: flex;
+
+      .icon {
+        background: black;
+        padding: 12px;
+        border-radius: 50%;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        margin-right: 8px;
+        flex-shrink: 0;
+
+        img {
+          width: 34px;
+          height: 34px;
+        }
+      }
+    }
+
+    .status-holder {
+      display: flex;
+      flex-direction: column;
+      background: black;
+      color: white;
+      align-items: center;
+      padding: 8px;
+      flex-shrink: 0;
+
+      .label {
+        font-size: 14px;
+        line-height: 17px;
+        color: #c4c4c4;
+      }
+
+      .arrival-time {
+        font-weight: 500;
+        font-size: 18px;
+        margin-top: 0.1rem;
+      }
+
+      .status-label {
+        background: #ffffff;
+        border-radius: 5px;
+        color: #ed5a2c;
+        padding: 2px 8px;
+        margin-top: 4px;
+      }
+    }
+  }
 }

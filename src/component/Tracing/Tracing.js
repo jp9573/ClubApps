@@ -16,6 +16,10 @@ import twoTruckIcon from "../../asset/tracing/towTruck.svg";
 import userIcon from "../../asset/accountProfile/user.svg";
 import RoomIcon from "@material-ui/icons/Room";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
+import flightIcon from "../../asset/tracing/flight.svg";
+import dinnerIcon from "../../asset/tracing/dinner.svg";
+import bedIcon from "../../asset/tracing/bed.svg";
+import stethoscopeIcon from "../../asset/tracing/stethoscope.svg";
 
 class Tracing extends Component {
   state = {
@@ -23,6 +27,7 @@ class Tracing extends Component {
     trackerType: "",
     tracingInfo: {},
     isLoading: true,
+    selectedDestination: undefined,
   };
   secondaryLogoMapping = {
     CAB: uberIcon,
@@ -35,6 +40,12 @@ class Tracing extends Component {
     FOOD_DELIVERY: deliveryIcon,
     AMBULANCE: ambulanceIcon,
     VEHICLE_REPAIR: twoTruckIcon,
+  };
+  customDestinationIconMapping = {
+    AIRPORT: flightIcon,
+    RESTAURANT: dinnerIcon,
+    HOTEL: bedIcon,
+    HOSPITAL: stethoscopeIcon,
   };
 
   componentDidMount() {
@@ -95,7 +106,7 @@ class Tracing extends Component {
                 {destination
                   ? destination.name
                     ? destination.name
-                    : `Location at (${destination.latitude}, ${destination.longitude})`
+                    : "Current Location"
                   : "Waiting for update"}
               </span>
             </div>
@@ -107,6 +118,50 @@ class Tracing extends Component {
         </div>
       </>
     );
+  };
+
+  getStatusJSX = () => {
+    const { tracingInfo } = this.state;
+    const { status } = tracingInfo;
+
+    if (!status) return null;
+
+    return (
+      <>
+        <span className="label">ARRIVING IN</span>
+        <span className="arrival-time">{status.arrivalInMinutes} min</span>
+        <span className="status-label">{status.status}</span>
+      </>
+    );
+  };
+
+  getCustomDestinationsJSX = () => {
+    const { tracingInfo, selectedDestination } = this.state;
+    const { customDestinations } = tracingInfo;
+
+    if (!customDestinations) return null;
+
+    const onDestinationClick = (destinationObj) => {
+      this.setState({ selectedDestination: destinationObj });
+    };
+
+    return customDestinations.map((destination, index) => {
+      const { name, type } = destination;
+      const cls =
+        selectedDestination && selectedDestination.type === type
+          ? "active"
+          : "";
+
+      return (
+        <div
+          className={`icon ${cls}`}
+          onClick={() => onDestinationClick(destination)}
+          key={index}
+        >
+          <img src={this.customDestinationIconMapping[type]} alt={name} />
+        </div>
+      );
+    });
   };
 
   render() {
@@ -142,6 +197,15 @@ class Tracing extends Component {
         </div>
 
         <div className="detail-row">{this.getServiceDetailJSX()}</div>
+
+        <div className="map-holder"></div>
+
+        <div className="footer-section">
+          <div className="custom-destination-holder">
+            {this.getCustomDestinationsJSX()}
+          </div>
+          <div className="status-holder">{this.getStatusJSX()}</div>
+        </div>
       </div>
     );
   }
