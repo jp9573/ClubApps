@@ -10,6 +10,7 @@ import rightArrowIcon from "../../asset/ticket/rightArrow.svg";
 import flight from "../../asset/ticket/flight.svg";
 import bus from "../../asset/ticket/bus.svg";
 import train from "../../asset/ticket/train.svg";
+import pageExpiredImage from "../../asset/image/pageExpired.svg";
 
 class Ticket extends Component {
   state = {
@@ -209,7 +210,12 @@ class Ticket extends Component {
     const { idToken, eventId, isLoading } = this.state;
 
     if (!idToken || idToken.length === 0 || !eventId || eventId.length === 0) {
-      return <p>Invalid session, please try again with valid link.</p>;
+      return (
+        <div className="page-not-found-container">
+          <img src={pageExpiredImage} alt="Expired" />
+          <p className="text-center mt-3">Your Page has expired.</p>
+        </div>
+      );
     }
 
     if (isLoading) {

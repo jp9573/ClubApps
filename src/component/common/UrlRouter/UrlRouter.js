@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { urlResolver } from "../../../common/Api";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import pageExpiredImage from "../../../asset/image/pageExpired.svg";
 
 class UrlRouter extends Component {
   state = { errorOccurred: false };
@@ -22,7 +23,12 @@ class UrlRouter extends Component {
 
   render() {
     if (this.state.errorOccurred) {
-      return <h3>Something went wrong, please try again later</h3>;
+      return (
+        <div className="page-not-found-container">
+          <img src={pageExpiredImage} alt="Expired" />
+          <p className="text-center mt-3">Your Page has expired.</p>
+        </div>
+      );
     } else {
       return (
         <div className="d-flex align-items-center justify-content-center h-100">
