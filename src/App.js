@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Route, Switch } from "react-router";
 import { routesMapping } from "./common/const";
+import PageNotFound from "./component/PageNotFound/PageNotFound";
 class App extends Component {
   state = { width: 0, height: 0 };
   minWidth = 414;
@@ -38,6 +39,7 @@ class App extends Component {
             component={routesMapping[route]}
           />
         ))}
+        <Route component={PageNotFound} />
       </Switch>
     );
   }
