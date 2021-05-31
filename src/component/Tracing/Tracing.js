@@ -28,6 +28,7 @@ class Tracing extends Component {
     tracingInfo: {},
     isLoading: true,
     selectedDestination: undefined,
+    destinationSearchBarValue: "",
   };
   secondaryLogoMapping = {
     CAB: uberIcon,
@@ -142,7 +143,12 @@ class Tracing extends Component {
     if (!customDestinations) return null;
 
     const onDestinationClick = (destinationObj) => {
-      this.setState({ selectedDestination: destinationObj });
+      this.setState({
+        selectedDestination:
+          selectedDestination !== destinationObj ? destinationObj : undefined,
+        destinationSearchBarValue:
+          selectedDestination !== destinationObj ? destinationObj.name : "",
+      });
     };
 
     return customDestinations.map((destination, index) => {
@@ -162,6 +168,35 @@ class Tracing extends Component {
         </div>
       );
     });
+  };
+
+  getCustomAddressBarJSX = () => {
+    const { selectedDestination, destinationSearchBarValue } = this.state;
+
+    if (!selectedDestination) return null;
+
+    const onUpdateDestination = () => {};
+
+    return (
+      <div className="custom-address-bar">
+        <RoomIcon />
+        <input
+          type="text"
+          className="search-box form-control"
+          placeholder="Search place..."
+          value={destinationSearchBarValue}
+          onChange={(e) =>
+            this.setState({ destinationSearchBarValue: e.target.value })
+          }
+        />
+        <button
+          className="btn btn-success go-button"
+          onClick={onUpdateDestination}
+        >
+          GO
+        </button>
+      </div>
+    );
   };
 
   render() {
@@ -201,10 +236,14 @@ class Tracing extends Component {
         <div className="map-holder"></div>
 
         <div className="footer-section">
-          <div className="custom-destination-holder">
-            {this.getCustomDestinationsJSX()}
+          {this.getCustomAddressBarJSX()}
+
+          <div className="bottom-row">
+            <div className="custom-destination-holder">
+              {this.getCustomDestinationsJSX()}
+            </div>
+            <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
-          <div className="status-holder">{this.getStatusJSX()}</div>
         </div>
       </div>
     );
