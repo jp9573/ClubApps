@@ -63,8 +63,54 @@ class Tracing extends Component {
       });
   };
 
+  getServiceDetailJSX = () => {
+    const { trackerType, tracingInfo } = this.state;
+    const { secureOtp, source, destination, serviceProvider } = tracingInfo;
+    const { agent, additionalFields } = serviceProvider;
+
+    return (
+      <>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center">
+            <img src={this.detailIconMapping[trackerType]} alt="Detail" />
+            {additionalFields ? (
+              <span className="vehicle-no">{additionalFields.VehicleInfo}</span>
+            ) : null}
+          </div>
+          <div className="otp">
+            OTP <b>{secureOtp}</b>
+          </div>
+        </div>
+        <div className="service-details">
+          <div className="location-content">
+            <div className="first-row">
+              <RadioButtonUncheckedIcon /> <span>{source.name}</span>
+            </div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+            <div className="last-row">
+              <RoomIcon />{" "}
+              <span>
+                {destination
+                  ? destination.name
+                    ? destination.name
+                    : `Location at (${destination.latitude}, ${destination.longitude})`
+                  : "Waiting for update"}
+              </span>
+            </div>
+          </div>
+          <div className="agent-content">
+            <img src={agent.photoUrl ? agent.photoUrl : userIcon} alt="User" />
+            <span className="name">{agent.givenName}</span>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   render() {
-    const { idToken, trackerType, isLoading, tracingInfo } = this.state;
+    const { idToken, trackerType, isLoading } = this.state;
 
     if (
       !idToken ||
@@ -88,9 +134,6 @@ class Tracing extends Component {
       );
     }
 
-    const { secureOtp, source, destination, serviceProvider } = tracingInfo;
-    const { agent, additionalFields } = serviceProvider;
-
     return (
       <div className="tracing-container">
         <div className="top-row">
@@ -98,44 +141,7 @@ class Tracing extends Component {
           <img src={this.secondaryLogoMapping[trackerType]} alt="Brand logo" />
         </div>
 
-        <div className="detail-row">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center">
-              <img src={this.detailIconMapping[trackerType]} alt="Detail" />
-              {additionalFields ? (
-                <span className="vehicle-no">
-                  {additionalFields.VehicleInfo}
-                </span>
-              ) : null}
-            </div>
-            <div className="otp">
-              OTP <b>{secureOtp}</b>
-            </div>
-          </div>
-          <div className="service-details">
-            <div className="location-content">
-              <div className="first-row">
-                <RadioButtonUncheckedIcon /> <span>{source.name}</span>
-              </div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="dot"></div>
-              <div className="last-row">
-                <RoomIcon />{" "}
-                <span>
-                  {destination ? destination.name : "Waiting for update"}
-                </span>
-              </div>
-            </div>
-            <div className="agent-content">
-              <img
-                src={agent.photoUrl ? agent.photoUrl : userIcon}
-                alt="User"
-              />
-              <span className="name">{agent.givenName}</span>
-            </div>
-          </div>
-        </div>
+        <div className="detail-row">{this.getServiceDetailJSX()}</div>
       </div>
     );
   }
