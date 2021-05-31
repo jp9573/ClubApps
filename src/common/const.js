@@ -1,3 +1,4 @@
+import AccountProfile from "../component/AccountProfile/AccountProfile";
 import UrlRouter from "../component/common/UrlRouter/UrlRouter";
 import OrderPortal from "../component/Restaurant/OrderPortal/OrderPortal";
 import Ticket from "../component/Ticket/Ticket";
@@ -8,4 +9,5 @@ export const routesMapping = {
   "/hotelroom/food/orderPortal": OrderPortal,
   "/grocery/orderPortal": OrderPortal,
   "/ticket/:eventId?": Ticket,
+  "/profile/:id?": AccountProfile,
 };

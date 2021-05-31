@@ -19,6 +19,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import pageExpiredImage from "../../../asset/image/pageExpired.svg";
 
 class OrderPortal extends Component {
   constructor(props) {
@@ -610,7 +611,12 @@ class OrderPortal extends Component {
     });
 
     if (!idToken || idToken.length === 0) {
-      return <p>Invalid session, please try again with valid link.</p>;
+      return (
+        <div className="page-not-found-container">
+          <img src={pageExpiredImage} alt="Expired" />
+          <p className="text-center mt-3">Your Page has expired.</p>
+        </div>
+      );
     }
 
     if (isLoading) {
