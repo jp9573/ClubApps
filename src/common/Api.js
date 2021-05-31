@@ -48,3 +48,11 @@ export function getTicketInfoApi(token, eventId) {
     },
   });
 }
+
+export function getTracingInfoApi(token, trackerType) {
+  return axiosInstance.get(`/TrackingProvider?trackertype=${trackerType}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
