@@ -4,6 +4,18 @@ import qs from "query-string";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { getTracingInfoApi } from "../../common/Api";
+import logo from "../../asset/tracing/logo.svg";
+import uberIcon from "../../asset/tracing/uber.svg";
+import swiggyIcon from "../../asset/tracing/swiggy.svg";
+import fortisIcon from "../../asset/tracing/fortis.svg";
+import suzukiIcon from "../../asset/tracing/suzuki.svg";
+import carIcon from "../../asset/tracing/car.svg";
+import deliveryIcon from "../../asset/tracing/delivery.svg";
+import ambulanceIcon from "../../asset/tracing/ambulance.svg";
+import twoTruckIcon from "../../asset/tracing/towTruck.svg";
+import userIcon from "../../asset/accountProfile/user.svg";
+import RoomIcon from "@material-ui/icons/Room";
+import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 
 class Tracing extends Component {
   state = {
@@ -11,6 +23,18 @@ class Tracing extends Component {
     trackerType: "",
     tracingInfo: {},
     isLoading: true,
+  };
+  secondaryLogoMapping = {
+    CAB: uberIcon,
+    FOOD_DELIVERY: swiggyIcon,
+    AMBULANCE: fortisIcon,
+    VEHICLE_REPAIR: suzukiIcon,
+  };
+  detailIconMapping = {
+    CAB: carIcon,
+    FOOD_DELIVERY: deliveryIcon,
+    AMBULANCE: ambulanceIcon,
+    VEHICLE_REPAIR: twoTruckIcon,
   };
 
   componentDidMount() {
@@ -40,7 +64,7 @@ class Tracing extends Component {
   };
 
   render() {
-    const { idToken, trackerType, isLoading } = this.state;
+    const { idToken, trackerType, isLoading, tracingInfo } = this.state;
 
     if (
       !idToken ||
@@ -64,7 +88,56 @@ class Tracing extends Component {
       );
     }
 
-    return <div className="tracing-container"></div>;
+    const { secureOtp, source, destination, serviceProvider } = tracingInfo;
+    const { agent, additionalFields } = serviceProvider;
+
+    return (
+      <div className="tracing-container">
+        <div className="top-row">
+          <img src={logo} alt="Logo" />
+          <img src={this.secondaryLogoMapping[trackerType]} alt="Brand logo" />
+        </div>
+
+        <div className="detail-row">
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex align-items-center">
+              <img src={this.detailIconMapping[trackerType]} alt="Detail" />
+              {additionalFields ? (
+                <span className="vehicle-no">
+                  {additionalFields.VehicleInfo}
+                </span>
+              ) : null}
+            </div>
+            <div className="otp">
+              OTP <b>{secureOtp}</b>
+            </div>
+          </div>
+          <div className="service-details">
+            <div className="location-content">
+              <div className="first-row">
+                <RadioButtonUncheckedIcon /> <span>{source.name}</span>
+              </div>
+              <div className="dot"></div>
+              <div className="dot"></div>
+              <div className="dot"></div>
+              <div className="last-row">
+                <RoomIcon />{" "}
+                <span>
+                  {destination ? destination.name : "Waiting for update"}
+                </span>
+              </div>
+            </div>
+            <div className="agent-content">
+              <img
+                src={agent.photoUrl ? agent.photoUrl : userIcon}
+                alt="User"
+              />
+              <span className="name">{agent.givenName}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 }
 

@@ -1,0 +1,84 @@
+.tracing-container {
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 18px;
+  }
+
+  .detail-row {
+    background: black;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+
+    .vehicle-no {
+      margin-left: 0.5rem;
+      font-size: 16px;
+      line-height: 19px;
+      color: #c4c4c4;
+    }
+
+    .otp {
+      b {
+        margin-left: 0.3rem;
+      }
+    }
+
+    .service-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+
+      .location-content {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .first-row,
+        .last-row {
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+
+          span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-left: 0.2rem;
+          }
+        }
+
+        .last-row {
+          margin-top: 3px;
+        }
+
+        svg {
+          width: 15px;
+          height: 15px;
+        }
+
+        .dot {
+          width: 3.5px;
+          height: 3.5px;
+          background: white;
+          border-radius: 50%;
+          margin-top: 3px;
+          margin-left: 5px;
+        }
+      }
+
+      .agent-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+
+        span {
+          margin-top: 0.2rem;
+        }
+      }
+    }
+  }
+}
