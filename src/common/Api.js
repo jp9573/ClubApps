@@ -25,8 +25,24 @@ export function urlResolver(token) {
     );
 }
 
-export function fetchMenuApi(token) {
-  return axiosInstance.get("/FoodMenuProvider", {
+export function fetchMenuApi(token, sessionCode) {
+  return axiosInstance.get(`/FoodMenu?sessionCode=${sessionCode}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getCouponCodeApi(token, couponCode) {
+  return axiosInstance.get(`/Coupon?code=${couponCode}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getRatingsApi(token, id) {
+  return axiosInstance.get(`/Establishment?id=${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -34,7 +50,7 @@ export function fetchMenuApi(token) {
 }
 
 export function submitOrderApi(token, data) {
-  return axiosInstance.post("/FoodOrderSubmissionProvider", data, {
+  return axiosInstance.post("/FoodOrderSubmission", data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
