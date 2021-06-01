@@ -8,6 +8,10 @@ export const isValidText = (name) => {
   return /^[a-zA-Z0-9 ]*$/.test(name);
 };
 
+export const isValidUPICode = (name) => {
+  return /^[a-zA-Z0-9@. - ]*$/.test(name);
+};
+
 export const isValidAddress = (name) => {
   return /^[a-zA-Z0-9,. -]*$/.test(name);
 };

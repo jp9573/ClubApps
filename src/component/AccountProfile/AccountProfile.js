@@ -9,6 +9,7 @@ import {
   isValidText,
   isValidAddress,
   isValidTextOnly,
+  isValidUPICode,
 } from "../../common/function";
 import { getUserProfileApi, saveUserProfileApi } from "../../common/Api";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
@@ -139,7 +140,7 @@ class AccountProfile extends Component {
     } else {
       this.setState({ addressLine1ErrorMessage: "" });
     }
-    if (addressLine2.length === 0 || !isValidAddress(addressLine2)) {
+    if (addressLine2.length > 0 && !isValidAddress(addressLine2)) {
       this.setState({
         addressLine2ErrorMessage: "Please enter valid address.",
       });
@@ -167,7 +168,7 @@ class AccountProfile extends Component {
     } else {
       this.setState({ postalCodeErrorMessage: "" });
     }
-    if (upiId.length === 0 || !isValidText(upiId)) {
+    if (upiId.length === 0 || !isValidUPICode(upiId)) {
       this.setState({ upiIdErrorMessage: "Please enter valid UPI id." });
       isValid = false;
     } else {
@@ -314,7 +315,7 @@ class AccountProfile extends Component {
               ) : null}
             </div>
             <div className="group">
-              <span className="label">Address Line 2 *</span>
+              <span className="label">Address Line 2</span>
               <input
                 type="text"
                 value={addressLine2}
