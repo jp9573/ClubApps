@@ -1,6 +1,11 @@
 import React, { Component } from "react";
 import qs from "query-string";
-import { fetchMenuApi, submitOrderApi } from "../../../common/Api";
+import {
+  fetchMenuApi,
+  getCouponCodeApi,
+  getRatingsApi,
+  submitOrderApi,
+} from "../../../common/Api";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import "./OrderPortal.scss";
 import StarIcon from "@material-ui/icons/Star";
@@ -26,10 +31,13 @@ class OrderPortal extends Component {
     super(props);
     this.state = {
       idToken: "fetching",
+      sessionCode: "",
       specialRequestText: "",
       menuItems: {},
       originalMenuItems: {},
       isLoading: true,
+      isCouponLoading: true,
+      isRatingLoading: true,
       vegOnly: false,
       cartItems: [],
       showCart: false,
@@ -46,18 +54,27 @@ class OrderPortal extends Component {
 
   componentDidMount() {
     const queryObj = qs.parse(this.props.location.search);
-    this.setState({ idToken: queryObj.idtoken });
-    this.fetchMenuItems(queryObj.idtoken);
+    this.setState({
+      idToken: queryObj.idtoken,
+      sessionCode: queryObj.sessionCode,
+    });
+    this.fetchMenuItems(queryObj.idtoken, queryObj.sessionCode);
   }
 
-  fetchMenuItems = (idToken) => {
-    fetchMenuApi(idToken)
+  fetchMenuItems = (idToken, sessionCode) => {
+    fetchMenuApi(idToken, sessionCode)
       .then((res) => {
-        this.setState({
-          menuItems: res.data,
-          originalMenuItems: res.data,
-          isLoading: false,
-        });
+        this.setState(
+          {
+            menuItems: res.data,
+            originalMenuItems: res.data,
+            isLoading: false,
+          },
+          () => {
+            this.fetchCoupons();
+            this.fetchRatings();
+          }
+        );
       })
       .catch((err) => {
         console.error(err.message);
@@ -65,20 +82,63 @@ class OrderPortal extends Component {
       });
   };
 
+  fetchCoupons = () => {
+    const { idToken } = this.state;
+    const { couponIds } = this.state.menuItems;
+
+    if (!couponIds) return;
+
+    getCouponCodeApi(idToken, couponIds[0])
+      .then((res) => {
+        this.setState({
+          menuItems: { ...this.state.menuItems, coupon: res.data },
+          originalMenuItems: { ...this.state.menuItems, coupon: res.data },
+          isRatingLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isRatingLoading: false });
+      });
+  };
+
+  fetchRatings = () => {
+    const { idToken } = this.state;
+    const { establishmentId } = this.state.menuItems;
+
+    if (!establishmentId) return;
+
+    getRatingsApi(idToken, establishmentId)
+      .then((res) => {
+        let menuItems = {
+          ...this.state.menuItems,
+          rating: res.data.rating,
+          name: res.data.name,
+        };
+        this.setState({
+          menuItems,
+          originalMenuItems: menuItems,
+          isCouponLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isCouponLoading: false });
+      });
+  };
+
   handleOnVegOnly = (e) => {
     let vegOnly = e.target.checked;
     let menuItems = JSON.parse(JSON.stringify(this.state.originalMenuItems));
     if (vegOnly) {
-      let menu = menuItems.menu;
+      let menu = menuItems.items;
       for (var key in menu) {
-        menu[key] = menu[key].filter(
-          (item) => item.type.toLowerCase() === "veg"
-        );
+        menu[key] = menu[key].filter((item) => item.isVeg);
         if (menu[key].length === 0) {
           delete menu[key];
         }
       }
-      menuItems.menu = menu;
+      menuItems.items = menu;
     }
     this.setState({ vegOnly, menuItems });
   };
@@ -96,7 +156,7 @@ class OrderPortal extends Component {
   };
 
   onItemAdd = (item, doNotAskCustomization = false) => {
-    if (item.customization === null || doNotAskCustomization) {
+    if (item.customizations === null || doNotAskCustomization) {
       this.setState({ cartItems: [...this.state.cartItems, item] });
     } else {
       this.setState({
@@ -197,7 +257,7 @@ class OrderPortal extends Component {
   };
 
   getBottomSheetCategoriesJSX = () => {
-    let menu = this.state.menuItems.menu;
+    let menu = this.state.menuItems.items;
 
     const scrollToSection = (sectionName) => {
       this.sectionRefs[sectionName].scrollIntoView({
@@ -244,15 +304,16 @@ class OrderPortal extends Component {
 
     if (!currentMenuItem) return null;
 
-    const customization =
-      currentMenuItem.customization[currentCustomizationIndex];
-    const { step, selectionType, options } = customization;
+    const customizations =
+      currentMenuItem.customizations[currentCustomizationIndex];
+    const { name, selectionType } = customizations;
+    const options = customizations.optionItems;
 
     let totalPrice = currentMenuItem.price;
     let isButtonDisabled = false;
 
     if (
-      selectionType === "Single" &&
+      selectionType === "SINGLE_OPTION" &&
       currentCustomizationSelection[currentCustomizationIndex].length === 0
     ) {
       isButtonDisabled = true;
@@ -268,7 +329,7 @@ class OrderPortal extends Component {
 
     const onItemAdd = () => {
       if (
-        currentMenuItem.customization.length - 1 >
+        currentMenuItem.customizations.length - 1 >
         currentCustomizationIndex
       ) {
         this.setState({
@@ -284,8 +345,8 @@ class OrderPortal extends Component {
             ...this.state.cartItems,
             {
               ...this.state.currentMenuItem,
-              originalCustomization: this.state.currentMenuItem.customization,
-              customization: { ...this.state.currentCustomizationSelection },
+              originalCustomization: this.state.currentMenuItem.customizations,
+              customizations: { ...this.state.currentCustomizationSelection },
             },
           ],
           isCustomizationMenuVisible: false,
@@ -299,14 +360,14 @@ class OrderPortal extends Component {
     return (
       <>
         <div className="top-section">
-          <span className="title">{step}</span>
+          <span className="title">{name}</span>
         </div>
         <div className="middle-section">
           {options.map((option, index) => {
-            if (selectionType === "Single") {
+            if (selectionType === "SINGLE_OPTION") {
               return (
                 <div className="option-slide" key={index}>
-                  <FoodTypeIcon isVeg={option.type.toLowerCase() === "veg"} />
+                  <FoodTypeIcon isVeg={option.isVeg} />
                   <div>
                     <input
                       type="radio"
@@ -340,7 +401,7 @@ class OrderPortal extends Component {
             } else {
               return (
                 <div className="option-slide" key={index}>
-                  <FoodTypeIcon isVeg={option.type.toLowerCase() === "veg"} />
+                  <FoodTypeIcon isVeg={option.isVeg} />
                   <div>
                     <input
                       type="checkbox"
@@ -432,9 +493,9 @@ class OrderPortal extends Component {
 
         items.map((i) => {
           itemTotal += i.price;
-          if (i.customization) {
-            for (let key in i.customization) {
-              i.customization[key].map((j) => {
+          if (i.customizations) {
+            for (let key in i.customizations) {
+              i.customizations[key].map((j) => {
                 customizationText += j.name + ", ";
                 itemTotal += j.price;
               });
@@ -445,7 +506,7 @@ class OrderPortal extends Component {
 
         let itemJSX = (
           <div className="cart-slide" key={key}>
-            <FoodTypeIcon isVeg={item.type.toLowerCase() === "veg"} />
+            <FoodTypeIcon isVeg={item.isVeg} />
             <span className="item-name">
               {item.name}
               {customizationText ? (
@@ -535,7 +596,7 @@ class OrderPortal extends Component {
       let item = items[0];
       let itemTotal = 0;
 
-      if (item.customization === null) {
+      if (item.customizations === null) {
         orderItems.push({
           Id: key,
           Name: item.name,
@@ -545,11 +606,11 @@ class OrderPortal extends Component {
       } else {
         items.map((item) => {
           let Customizations = [];
-          const { customization, originalCustomization } = item;
-          for (let key in customization) {
+          const { customizations, originalCustomization } = item;
+          for (let key in customizations) {
             Customizations.push({
-              Name: originalCustomization[key].step,
-              SelectedOptions: customization[key].map((cItem) => {
+              Name: originalCustomization[key].name,
+              SelectedItems: customizations[key].map((cItem) => {
                 return {
                   Id: cItem.id,
                   Name: cItem.name,
@@ -570,8 +631,8 @@ class OrderPortal extends Component {
     }
 
     submitOrderApi(idToken, {
-      SpecialRequest: specialRequestText,
-      OrderedItems: orderItems,
+      EstablishmentId: this.state.menuItems.establishmentId,
+      Order: { SpecialRequest: specialRequestText, Items: orderItems },
     })
       .then((res) => {
         this.setState({ showOrderPlacedModal: true, showLoadingModal: false });
@@ -598,14 +659,14 @@ class OrderPortal extends Component {
       showOrderPlacedModal,
       showLoadingModal,
     } = this.state;
-    const { name, logoPath, category, rating, coupon, menu } = menuItems;
+    const { name, logoPath, theme, rating, coupon, items } = menuItems;
 
     let cartTotal = 0;
     cartItems.map((item) => {
       cartTotal += item.price;
-      if (item.customization) {
-        for (let key in item.customization) {
-          item.customization[key].map((i) => (cartTotal += i.price));
+      if (item.customizations) {
+        for (let key in item.customizations) {
+          item.customizations[key].map((i) => (cartTotal += i.price));
         }
       }
     });
@@ -633,17 +694,19 @@ class OrderPortal extends Component {
           <div className="top-section d-flex flex-wrap justify-content-between align-items-center">
             <div className="d-flex flex-column">
               <span className="title">{name}</span>
-              <span className="category">{category}</span>
+              <span className="category">{theme}</span>
             </div>
-            <div className="rating-box d-flex flex-column">
-              <div className="d-flex align-self-center align-items-center">
-                <StarIcon />
-                <span className="rating">{rating.value}</span>
+            {rating ? (
+              <div className="rating-box d-flex flex-column">
+                <div className="d-flex align-self-center align-items-center">
+                  <StarIcon />
+                  <span className="rating">{rating.value}</span>
+                </div>
+                <span className="impressions text-center">
+                  {rating.impressions}
+                </span>
               </div>
-              <span className="impressions text-center">
-                {rating.impressions}
-              </span>
-            </div>
+            ) : null}
           </div>
 
           {coupon ? (
@@ -662,7 +725,7 @@ class OrderPortal extends Component {
                 name="vegOnly"
               />
             </div>
-            <div className="menu-sections">{this.getMenuSections(menu)}</div>
+            <div className="menu-sections">{this.getMenuSections(items)}</div>
           </div>
 
           <div className="browse-menu" onClick={this.openBrowseMenu}>

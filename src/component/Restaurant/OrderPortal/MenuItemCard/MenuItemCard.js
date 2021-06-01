@@ -29,12 +29,12 @@ const AddButton = (props) => {
 
 const BasicCard = (props) => {
   const { menuItem, cartItemCount, onItemRemove, onItemAdd } = props;
-  const { name, price, type, shortDescription } = menuItem;
+  const { name, price, isVeg, shortDescription } = menuItem;
 
   return (
     <div className="card menu-item-card basic-card">
       <div className="d-flex align-items-center title">
-        <FoodTypeIcon isVeg={type.toLowerCase() === "veg"} />
+        <FoodTypeIcon isVeg={isVeg} />
         <span className="item-name">{name}</span>
       </div>
       <span className="description">{shortDescription}</span>
@@ -53,14 +53,21 @@ const BasicCard = (props) => {
 
 const RichCard = (props) => {
   const { menuItem, cartItemCount, onItemRemove, onItemAdd } = props;
-  const { name, price, imageUrl, type, tag, shortDescription, customization } =
-    menuItem;
+  const {
+    name,
+    price,
+    imageUrl,
+    isVeg,
+    tag,
+    shortDescription,
+    customizations,
+  } = menuItem;
 
   return (
     <div className="rich-card">
       <div className="left-section">
         <div className="d-flex align-items-center title">
-          <FoodTypeIcon isVeg={type.toLowerCase() === "veg"} />
+          <FoodTypeIcon isVeg={isVeg} />
           {tag ? (
             <>
               <StarIcon style={{ fill: "#FC8019" }} />
@@ -79,9 +86,9 @@ const RichCard = (props) => {
           cartItemCount={cartItemCount}
           onItemRemove={onItemRemove}
           onItemAdd={onItemAdd}
-          hasCustomization={customization !== null}
+          hasCustomization={customizations !== null}
         />
-        {customization ? (
+        {customizations ? (
           <span className="customization">Customizable</span>
         ) : null}
       </div>

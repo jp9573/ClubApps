@@ -204,11 +204,19 @@ class AccountProfile extends Component {
         upiId,
         idToken,
       } = this.state;
+      let familyName = "";
+      let nameChunks = name.split(" ");
+      if (nameChunks.length === 2) {
+        familyName = nameChunks[1];
+      } else if (nameChunks.length > 2) {
+        let newNameChunks = nameChunks.slice(1);
+        familyName = newNameChunks.join(" ");
+      }
 
       let data = {
         user: {
-          givenName: name.split(" ")[0],
-          familyName: name.split(" ").length > 1 ? name.split(" ")[1] : "",
+          givenName: nameChunks[0],
+          familyName: familyName,
           emailAddress: email,
         },
         billingAddress: {

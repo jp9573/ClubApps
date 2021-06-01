@@ -13,7 +13,7 @@ class UrlRouter extends Component {
         let url = res.data.longUrl;
         url = url.substring(url.indexOf(".in"));
         url = url.substring(url.indexOf("/"));
-        this.props.history.push(url);
+        this.props.history.push(url + "&sessionCode=" + token);
       })
       .catch((err) => {
         console.error(err.message);
