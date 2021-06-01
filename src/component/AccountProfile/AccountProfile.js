@@ -27,6 +27,7 @@ class AccountProfile extends Component {
   state = {
     contactNo: "",
     name: "",
+    nameErrorMessage: "",
     email: "",
     emailErrorMessage: "",
     addressLine1: "",
@@ -117,6 +118,7 @@ class AccountProfile extends Component {
   hasValidValues = () => {
     let isValid = true;
     const {
+      name,
       email,
       addressLine1,
       addressLine2,
@@ -126,6 +128,12 @@ class AccountProfile extends Component {
       upiId,
     } = this.state;
 
+    if (name.length === 0 || !isValidTextOnly(name)) {
+      this.setState({ nameErrorMessage: "Please enter valid name." });
+      isValid = false;
+    } else {
+      this.setState({ nameErrorMessage: "" });
+    }
     if (email.length === 0 || !isValidEmail(email)) {
       this.setState({ emailErrorMessage: "Please enter valid email address." });
       isValid = false;
@@ -185,6 +193,7 @@ class AccountProfile extends Component {
     if (isValid) {
       this.setState({ isSaving: true });
       const {
+        name,
         email,
         addressLine1,
         addressLine2,
@@ -198,6 +207,8 @@ class AccountProfile extends Component {
 
       let data = {
         user: {
+          givenName: name.split(" ")[0],
+          familyName: name.split(" ").length > 1 ? name.split(" ")[1] : "",
           emailAddress: email,
         },
         billingAddress: {
@@ -237,6 +248,7 @@ class AccountProfile extends Component {
       postalCode,
       country,
       upiId,
+      nameErrorMessage,
       emailErrorMessage,
       addressLine1ErrorMessage,
       addressLine2ErrorMessage,
@@ -285,7 +297,14 @@ class AccountProfile extends Component {
           </div>
           <div className="group name-group">
             <span className="label">Full Name</span>
-            <span className="name">{name}</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => this.setState({ name: e.target.value })}
+            />
+            {nameErrorMessage ? (
+              <span className="error">{nameErrorMessage}</span>
+            ) : null}
           </div>
           <div className="group email-group">
             <span className="label">Email Address *</span>
