@@ -53,7 +53,6 @@ class Ticket extends Component {
 
   fetchTicketDetails = () => {
     const { idToken, eventId } = this.state;
-    console.log(idToken, eventId);
     getTicketInfoApi(idToken, eventId)
       .then((res) => {
         this.setState({

@@ -48,3 +48,27 @@ export function getTicketInfoApi(token, eventId) {
     },
   });
 }
+
+export function getTracingInfoApi(token, trackerType) {
+  return axiosInstance.get(`/TrackingProvider?trackertype=${trackerType}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getUserProfileApi(token) {
+  return axiosInstance.get(`/Profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function saveUserProfileApi(token, data) {
+  return axiosInstance.post(`/ProfileUpdate`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
