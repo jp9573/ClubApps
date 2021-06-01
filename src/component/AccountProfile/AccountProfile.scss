@@ -6,6 +6,33 @@
   flex-direction: column;
   overflow: auto;
 
+  &::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background-color: transparent;
+    cursor: pointer;
+    &.hover {
+      cursor: pointer;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: transparent;
+    &.focus {
+      cursor: pointer;
+    }
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: transparent;
+    cursor: pointer;
+    &.hover {
+      cursor: pointer;
+    }
+  }
+
   .profile-card {
     background: #ffffff;
     border-radius: 10px;
