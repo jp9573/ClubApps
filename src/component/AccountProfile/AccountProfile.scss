@@ -1,10 +1,37 @@
 .account-profile-container {
-  background-image: url("../../asset/accountProfile/background.svg");
+  background-image: url("../../asset/accountProfile/background.png");
   height: 100%;
   padding: 0.5rem 1rem 1rem 1rem;
   display: flex;
   flex-direction: column;
   overflow: auto;
+
+  &::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background-color: transparent;
+    cursor: pointer;
+    &.hover {
+      cursor: pointer;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: transparent;
+    &.focus {
+      cursor: pointer;
+    }
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: transparent;
+    cursor: pointer;
+    &.hover {
+      cursor: pointer;
+    }
+  }
 
   .profile-card {
     background: #ffffff;
@@ -45,6 +72,8 @@
       flex-direction: column;
       margin-top: 25px;
       margin-right: 7px;
+      overflow: hidden;
+      min-width: 0;
 
       .label {
         font-weight: 400;
@@ -70,10 +99,23 @@
         border-bottom: 1px solid #c4c4c4;
       }
 
+      .MuiSelect-selectMenu {
+        font-size: 1rem;
+        font-weight: 300;
+      }
+
       .error {
         font-size: 13px;
         color: red;
         margin-top: 0.1rem;
+      }
+
+      .MuiSelect-select.MuiSelect-select {
+        padding-bottom: 0;
+      }
+
+      .MuiInput-underline:before {
+        border-bottom: 1px solid #c4c4c4;
       }
     }
 

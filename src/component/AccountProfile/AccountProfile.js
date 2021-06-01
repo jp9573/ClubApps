@@ -9,12 +9,15 @@ import {
   isValidText,
   isValidAddress,
   isValidTextOnly,
+  isValidUPICode,
 } from "../../common/function";
 import { getUserProfileApi, saveUserProfileApi } from "../../common/Api";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
 
 const Alert = (props) => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -22,9 +25,9 @@ const Alert = (props) => {
 
 class AccountProfile extends Component {
   state = {
-    profilePic: userIcon,
     contactNo: "",
     name: "",
+    nameErrorMessage: "",
     email: "",
     emailErrorMessage: "",
     addressLine1: "",
@@ -46,6 +49,44 @@ class AccountProfile extends Component {
     response: undefined,
     showSuccessSnackbar: false,
   };
+  states = [
+    "Andaman and Nicobar Islands",
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chandigarh",
+    "Chhattisgarh",
+    "Dadra and Nagar Haveli",
+    "Daman and Diu",
+    "Delhi",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jammu and Kashmir",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Lakshadweep",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Puducherry",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+  ];
 
   componentDidMount() {
     const queryObj = qs.parse(this.props.location.search);
@@ -77,6 +118,7 @@ class AccountProfile extends Component {
   hasValidValues = () => {
     let isValid = true;
     const {
+      name,
       email,
       addressLine1,
       addressLine2,
@@ -86,6 +128,12 @@ class AccountProfile extends Component {
       upiId,
     } = this.state;
 
+    if (name.length === 0 || !isValidTextOnly(name)) {
+      this.setState({ nameErrorMessage: "Please enter valid name." });
+      isValid = false;
+    } else {
+      this.setState({ nameErrorMessage: "" });
+    }
     if (email.length === 0 || !isValidEmail(email)) {
       this.setState({ emailErrorMessage: "Please enter valid email address." });
       isValid = false;
@@ -100,7 +148,7 @@ class AccountProfile extends Component {
     } else {
       this.setState({ addressLine1ErrorMessage: "" });
     }
-    if (addressLine2.length === 0 || !isValidAddress(addressLine2)) {
+    if (addressLine2.length > 0 && !isValidAddress(addressLine2)) {
       this.setState({
         addressLine2ErrorMessage: "Please enter valid address.",
       });
@@ -128,7 +176,7 @@ class AccountProfile extends Component {
     } else {
       this.setState({ postalCodeErrorMessage: "" });
     }
-    if (upiId.length === 0 || !isValidText(upiId)) {
+    if (upiId.length === 0 || !isValidUPICode(upiId)) {
       this.setState({ upiIdErrorMessage: "Please enter valid UPI id." });
       isValid = false;
     } else {
@@ -145,6 +193,7 @@ class AccountProfile extends Component {
     if (isValid) {
       this.setState({ isSaving: true });
       const {
+        name,
         email,
         addressLine1,
         addressLine2,
@@ -158,6 +207,8 @@ class AccountProfile extends Component {
 
       let data = {
         user: {
+          givenName: name.split(" ")[0],
+          familyName: name.split(" ").length > 1 ? name.split(" ")[1] : "",
           emailAddress: email,
         },
         billingAddress: {
@@ -187,7 +238,6 @@ class AccountProfile extends Component {
 
   render() {
     const {
-      profilePic,
       contactNo,
       name,
       email,
@@ -198,6 +248,7 @@ class AccountProfile extends Component {
       postalCode,
       country,
       upiId,
+      nameErrorMessage,
       emailErrorMessage,
       addressLine1ErrorMessage,
       addressLine2ErrorMessage,
@@ -237,7 +288,7 @@ class AccountProfile extends Component {
           <div className="top-row">
             <h3>Account Profile</h3>
             <div className="profile-pic-holder">
-              <img src={profilePic} alt="Profile" />
+              <img src={userIcon} alt="Profile" />
             </div>
           </div>
           <div className="phone-content">
@@ -246,7 +297,14 @@ class AccountProfile extends Component {
           </div>
           <div className="group name-group">
             <span className="label">Full Name</span>
-            <span className="name">{name}</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => this.setState({ name: e.target.value })}
+            />
+            {nameErrorMessage ? (
+              <span className="error">{nameErrorMessage}</span>
+            ) : null}
           </div>
           <div className="group email-group">
             <span className="label">Email Address *</span>
@@ -276,7 +334,7 @@ class AccountProfile extends Component {
               ) : null}
             </div>
             <div className="group">
-              <span className="label">Address Line 2 *</span>
+              <span className="label">Address Line 2</span>
               <input
                 type="text"
                 value={addressLine2}
@@ -302,11 +360,16 @@ class AccountProfile extends Component {
               </div>
               <div className="group">
                 <span className="label">State *</span>
-                <input
-                  type="text"
+                <Select
                   value={state}
                   onChange={(e) => this.setState({ state: e.target.value })}
-                />
+                >
+                  {this.states.map((state, index) => (
+                    <MenuItem value={state} key={index}>
+                      {state}
+                    </MenuItem>
+                  ))}
+                </Select>
                 {stateErrorMessage ? (
                   <span className="error">{stateErrorMessage}</span>
                 ) : null}
