@@ -45,6 +45,8 @@
       flex-direction: column;
       margin-top: 25px;
       margin-right: 7px;
+      overflow: hidden;
+      min-width: 0;
 
       .label {
         font-weight: 400;
@@ -70,10 +72,23 @@
         border-bottom: 1px solid #c4c4c4;
       }
 
+      .MuiSelect-selectMenu {
+        font-size: 1rem;
+        font-weight: 300;
+      }
+
       .error {
         font-size: 13px;
         color: red;
         margin-top: 0.1rem;
+      }
+
+      .MuiSelect-select.MuiSelect-select {
+        padding-bottom: 0;
+      }
+
+      .MuiInput-underline:before {
+        border-bottom: 1px solid #c4c4c4;
       }
     }
 

@@ -15,6 +15,8 @@ import pageExpiredImage from "../../asset/image/pageExpired.svg";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
+import MenuItem from "@material-ui/core/MenuItem";
+import Select from "@material-ui/core/Select";
 
 const Alert = (props) => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -45,6 +47,44 @@ class AccountProfile extends Component {
     response: undefined,
     showSuccessSnackbar: false,
   };
+  states = [
+    "Andaman and Nicobar Islands",
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chandigarh",
+    "Chhattisgarh",
+    "Dadra and Nagar Haveli",
+    "Daman and Diu",
+    "Delhi",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jammu and Kashmir",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Lakshadweep",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Puducherry",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+  ];
 
   componentDidMount() {
     const queryObj = qs.parse(this.props.location.search);
@@ -300,11 +340,16 @@ class AccountProfile extends Component {
               </div>
               <div className="group">
                 <span className="label">State *</span>
-                <input
-                  type="text"
+                <Select
                   value={state}
                   onChange={(e) => this.setState({ state: e.target.value })}
-                />
+                >
+                  {this.states.map((state, index) => (
+                    <MenuItem value={state} key={index}>
+                      {state}
+                    </MenuItem>
+                  ))}
+                </Select>
                 {stateErrorMessage ? (
                   <span className="error">{stateErrorMessage}</span>
                 ) : null}
