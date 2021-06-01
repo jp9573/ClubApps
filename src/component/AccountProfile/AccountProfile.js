@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import qs from "query-string";
 import "./AccountProfile.scss";
 import logo from "../../asset/ticket/logo.svg";
 import userIcon from "../../asset/accountProfile/user.svg";
@@ -9,12 +10,15 @@ import {
   isValidAddress,
   isValidTextOnly,
 } from "../../common/function";
+import { getUserProfileApi } from "../../common/Api";
+import pageExpiredImage from "../../asset/image/pageExpired.svg";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 class AccountProfile extends Component {
   state = {
     profilePic: userIcon,
-    contactNo: "99491 89336",
-    name: "Harshal Priyadarshi",
+    contactNo: "",
+    name: "",
     email: "",
     emailErrorMessage: "",
     addressLine1: "",
@@ -30,7 +34,37 @@ class AccountProfile extends Component {
     country: "India",
     upiId: "",
     upiIdErrorMessage: "",
+    idToken: "fetching",
+    isLoading: true,
+    response: undefined,
   };
+
+  componentDidMount() {
+    const queryObj = qs.parse(this.props.location.search);
+    this.setState({ idToken: queryObj.idtoken });
+    getUserProfileApi(queryObj.idtoken)
+      .then((res) => {
+        const data = res.data;
+        const billingAddress = data.billingAddress;
+        this.setState({
+          response: data,
+          name: data.user.givenName + " " + data.user.familyName,
+          contactNo: data.user.phoneNumber ? data.user.phoneNumber : "",
+          email: data.user.emailAddress ? data.user.emailAddress : "",
+          addressLine1: billingAddress ? billingAddress.AddressLine1 : "",
+          addressLine2: billingAddress ? billingAddress.AddressLine2 : "",
+          city: billingAddress ? billingAddress.City : "",
+          state: billingAddress ? billingAddress.State : "",
+          postalCode: billingAddress ? billingAddress.PostalCode : "",
+          upiId: data.upiAddress ? data.upiAddress : "",
+          isLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ idToken: undefined, isLoading: false });
+      });
+  }
 
   hasValidValues = () => {
     let isValid = true;
@@ -121,7 +155,26 @@ class AccountProfile extends Component {
       stateErrorMessage,
       postalCodeErrorMessage,
       upiIdErrorMessage,
+      idToken,
+      isLoading,
     } = this.state;
+
+    if (!idToken || idToken.length === 0) {
+      return (
+        <div className="page-not-found-container">
+          <img src={pageExpiredImage} alt="Expired" />
+          <p className="text-center mt-3">Your Page has expired.</p>
+        </div>
+      );
+    }
+
+    if (isLoading) {
+      return (
+        <div className="d-flex align-items-center justify-content-center h-100">
+          <CircularProgress />
+        </div>
+      );
+    }
 
     return (
       <div className="account-profile-container">

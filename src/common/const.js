@@ -10,6 +10,6 @@ export const routesMapping = {
   "/hotelroom/food/orderPortal": OrderPortal,
   "/grocery/orderPortal": OrderPortal,
   "/ticket/:eventId?": Ticket,
-  "/profile/:id?": AccountProfile,
+  "/user/profile": AccountProfile,
   "/tracing/:trackerType?": Tracing,
 };

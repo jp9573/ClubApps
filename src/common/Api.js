@@ -56,3 +56,11 @@ export function getTracingInfoApi(token, trackerType) {
     },
   });
 }
+
+export function getUserProfileApi(token) {
+  return axiosInstance.get(`/Profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
