@@ -10,9 +10,15 @@ import {
   isValidAddress,
   isValidTextOnly,
 } from "../../common/function";
-import { getUserProfileApi } from "../../common/Api";
+import { getUserProfileApi, saveUserProfileApi } from "../../common/Api";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
+const Alert = (props) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
 
 class AccountProfile extends Component {
   state = {
@@ -36,7 +42,9 @@ class AccountProfile extends Component {
     upiIdErrorMessage: "",
     idToken: "fetching",
     isLoading: true,
+    isSaving: false,
     response: undefined,
+    showSuccessSnackbar: false,
   };
 
   componentDidMount() {
@@ -51,11 +59,11 @@ class AccountProfile extends Component {
           name: data.user.givenName + " " + data.user.familyName,
           contactNo: data.user.phoneNumber ? data.user.phoneNumber : "",
           email: data.user.emailAddress ? data.user.emailAddress : "",
-          addressLine1: billingAddress ? billingAddress.AddressLine1 : "",
-          addressLine2: billingAddress ? billingAddress.AddressLine2 : "",
-          city: billingAddress ? billingAddress.City : "",
-          state: billingAddress ? billingAddress.State : "",
-          postalCode: billingAddress ? billingAddress.PostalCode : "",
+          addressLine1: billingAddress ? billingAddress.addressLine1 : "",
+          addressLine2: billingAddress ? billingAddress.addressLine2 : "",
+          city: billingAddress ? billingAddress.city : "",
+          state: billingAddress ? billingAddress.state : "",
+          postalCode: billingAddress ? billingAddress.postalCode : "",
           upiId: data.upiAddress ? data.upiAddress : "",
           isLoading: false,
         });
@@ -133,6 +141,48 @@ class AccountProfile extends Component {
   handleSave = (e) => {
     e.preventDefault();
     const isValid = this.hasValidValues();
+
+    if (isValid) {
+      this.setState({ isSaving: true });
+      const {
+        email,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        postalCode,
+        country,
+        upiId,
+        idToken,
+      } = this.state;
+
+      let data = {
+        user: {
+          emailAddress: email,
+        },
+        billingAddress: {
+          AddressLine1: addressLine1,
+          AddressLine2: addressLine2,
+          City: city,
+          State: state,
+          PostalCode: postalCode,
+          Country: country,
+        },
+        upiAddress: upiId,
+      };
+
+      saveUserProfileApi(idToken, data)
+        .then((res) => {
+          this.setState({ showSuccessSnackbar: true, isSaving: false });
+        })
+        .catch((err) => {
+          console.error(err.message);
+          this.setState({
+            idToken: undefined,
+            isSaving: false,
+          });
+        });
+    }
   };
 
   render() {
@@ -157,6 +207,8 @@ class AccountProfile extends Component {
       upiIdErrorMessage,
       idToken,
       isLoading,
+      showSuccessSnackbar,
+      isSaving,
     } = this.state;
 
     if (!idToken || idToken.length === 0) {
@@ -299,9 +351,20 @@ class AccountProfile extends Component {
           <button
             className="btn btn-primary save-button"
             onClick={this.handleSave}
+            disabled={isSaving}
           >
-            SAVE
+            {isSaving ? "Saving..." : "SAVE"}
           </button>
+
+          <Snackbar
+            open={showSuccessSnackbar}
+            autoHideDuration={5000}
+            onClose={() => {
+              this.setState({ showSuccessSnackbar: false });
+            }}
+          >
+            <Alert severity="success">Profile data saved successfully.</Alert>
+          </Snackbar>
         </div>
       </div>
     );

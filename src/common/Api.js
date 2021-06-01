@@ -64,3 +64,11 @@ export function getUserProfileApi(token) {
     },
   });
 }
+
+export function saveUserProfileApi(token, data) {
+  return axiosInstance.post(`/ProfileUpdate`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
