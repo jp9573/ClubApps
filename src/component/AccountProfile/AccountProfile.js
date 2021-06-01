@@ -210,7 +210,6 @@ class AccountProfile extends Component {
         familyName = nameChunks[1];
       } else if (nameChunks.length > 2) {
         let newNameChunks = nameChunks.slice(1);
-        console.log(newNameChunks);
         familyName = newNameChunks.join(" ");
       }
 
