@@ -100,7 +100,7 @@ class AccountProfile extends Component {
     } else {
       this.setState({ addressLine1ErrorMessage: "" });
     }
-    if (addressLine2.length > 0 && !isValidAddress(addressLine2)) {
+    if (addressLine2.length === 0 || !isValidAddress(addressLine2)) {
       this.setState({
         addressLine2ErrorMessage: "Please enter valid address.",
       });
@@ -249,7 +249,7 @@ class AccountProfile extends Component {
             <span className="name">{name}</span>
           </div>
           <div className="group email-group">
-            <span className="label">Email Address</span>
+            <span className="label">Email Address *</span>
             <input
               type="email"
               value={email}
@@ -263,7 +263,7 @@ class AccountProfile extends Component {
           <div className="billing-group">
             <h3>Billing Address</h3>
             <div className="group">
-              <span className="label">Address Line 1</span>
+              <span className="label">Address Line 1 *</span>
               <input
                 type="text"
                 value={addressLine1}
@@ -276,7 +276,7 @@ class AccountProfile extends Component {
               ) : null}
             </div>
             <div className="group">
-              <span className="label">Address Line 2</span>
+              <span className="label">Address Line 2 *</span>
               <input
                 type="text"
                 value={addressLine2}
@@ -290,7 +290,7 @@ class AccountProfile extends Component {
             </div>
             <div className="d-grid">
               <div className="group">
-                <span className="label">City</span>
+                <span className="label">City *</span>
                 <input
                   type="text"
                   value={city}
@@ -301,7 +301,7 @@ class AccountProfile extends Component {
                 ) : null}
               </div>
               <div className="group">
-                <span className="label">State</span>
+                <span className="label">State *</span>
                 <input
                   type="text"
                   value={state}
@@ -314,7 +314,7 @@ class AccountProfile extends Component {
             </div>
             <div className="d-grid">
               <div className="group">
-                <span className="label">Postal Code</span>
+                <span className="label">Postal Code *</span>
                 <input
                   type="text"
                   value={postalCode}
@@ -336,7 +336,7 @@ class AccountProfile extends Component {
           <div className="payment-group">
             <h3>Payment Information</h3>
             <div className="group">
-              <span className="label">UPI ID</span>
+              <span className="label">UPI ID *</span>
               <input
                 type="text"
                 value={upiId}
