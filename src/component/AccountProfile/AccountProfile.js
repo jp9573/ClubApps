@@ -22,7 +22,6 @@ const Alert = (props) => {
 
 class AccountProfile extends Component {
   state = {
-    profilePic: userIcon,
     contactNo: "",
     name: "",
     email: "",
@@ -187,7 +186,6 @@ class AccountProfile extends Component {
 
   render() {
     const {
-      profilePic,
       contactNo,
       name,
       email,
@@ -237,7 +235,7 @@ class AccountProfile extends Component {
           <div className="top-row">
             <h3>Account Profile</h3>
             <div className="profile-pic-holder">
-              <img src={profilePic} alt="Profile" />
+              <img src={userIcon} alt="Profile" />
             </div>
           </div>
           <div className="phone-content">
