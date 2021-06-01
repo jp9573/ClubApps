@@ -21,6 +21,19 @@ class UrlRouter extends Component {
       });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props !== prevProps) {
+      let token = this.props.match.params.token;
+      if (token === "profile") {
+        this.props.history.push(
+          "/user" + this.props.location.pathname + this.props.location.search
+        );
+      } else {
+        this.setState({ errorOccurred: true });
+      }
+    }
+  }
+
   render() {
     if (this.state.errorOccurred) {
       return (

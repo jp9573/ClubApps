@@ -1,0 +1,212 @@
+.tracing-container {
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 18px;
+  }
+
+  .detail-row {
+    background: black;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+
+    .vehicle-no {
+      margin-left: 0.5rem;
+      font-size: 16px;
+      line-height: 19px;
+      color: #c4c4c4;
+    }
+
+    .otp {
+      b {
+        margin-left: 0.3rem;
+      }
+    }
+
+    .service-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+
+      .location-content {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .first-row,
+        .last-row {
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+
+          span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-left: 0.2rem;
+          }
+        }
+
+        .last-row {
+          margin-top: 3px;
+        }
+
+        svg {
+          width: 15px;
+          height: 15px;
+        }
+
+        .dot {
+          width: 3.5px;
+          height: 3.5px;
+          background: white;
+          border-radius: 50%;
+          margin-top: 3px;
+          margin-left: 5px;
+        }
+      }
+
+      .agent-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 16px;
+
+        span {
+          margin-top: 0.2rem;
+        }
+      }
+    }
+  }
+
+  .footer-section {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+
+    .custom-address-bar {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 0px 10px 10px 0px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      color: white;
+      padding-left: 12px;
+
+      svg {
+        width: 0.9em;
+        height: 0.9em;
+      }
+
+      input {
+        background: transparent;
+        outline: none;
+        border: none;
+        color: white;
+        box-shadow: none;
+
+        &::-webkit-input-placeholder {
+          /* WebKit, Blink, Edge */
+          color: #c4c4c4;
+        }
+        &:-moz-placeholder {
+          /* Mozilla Firefox 4 to 18 */
+          color: #c4c4c4;
+          opacity: 1;
+        }
+        &::-moz-placeholder {
+          /* Mozilla Firefox 19+ */
+          color: #c4c4c4;
+          opacity: 1;
+        }
+        &:-ms-input-placeholder {
+          /* Internet Explorer 10-11 */
+          color: #c4c4c4;
+        }
+        &::-ms-input-placeholder {
+          /* Microsoft Edge */
+          color: #c4c4c4;
+        }
+        &::placeholder {
+          /* Most modern browsers support this now. */
+          color: #c4c4c4;
+        }
+      }
+
+      button {
+        background: #ff4c23;
+        outline: none;
+        border: 0;
+        box-shadow: none;
+        font-weight: 500;
+        padding: 16px 17px 13px 18px;
+        border-radius: 0px 10px 10px 0px;
+        font-size: 20px;
+      }
+    }
+
+    .bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .custom-destination-holder {
+        display: flex;
+
+        .icon {
+          background: black;
+          padding: 12px;
+          border-radius: 50%;
+          box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+          margin-right: 8px;
+          flex-shrink: 0;
+
+          &.active {
+            background: #ff4c23;
+          }
+
+          img {
+            width: 34px;
+            height: 34px;
+          }
+        }
+      }
+
+      .status-holder {
+        display: flex;
+        flex-direction: column;
+        background: black;
+        color: white;
+        align-items: center;
+        padding: 8px;
+        flex-shrink: 0;
+
+        .label {
+          font-size: 14px;
+          line-height: 17px;
+          color: #c4c4c4;
+        }
+
+        .arrival-time {
+          font-weight: 500;
+          font-size: 18px;
+          margin-top: 0.1rem;
+        }
+
+        .status-label {
+          background: #ffffff;
+          border-radius: 5px;
+          color: #ed5a2c;
+          padding: 2px 8px;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+}

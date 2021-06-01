@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import qs from "query-string";
 import "./AccountProfile.scss";
 import logo from "../../asset/ticket/logo.svg";
 import userIcon from "../../asset/accountProfile/user.svg";
@@ -9,12 +10,21 @@ import {
   isValidAddress,
   isValidTextOnly,
 } from "../../common/function";
+import { getUserProfileApi, saveUserProfileApi } from "../../common/Api";
+import pageExpiredImage from "../../asset/image/pageExpired.svg";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
+const Alert = (props) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
 
 class AccountProfile extends Component {
   state = {
     profilePic: userIcon,
-    contactNo: "99491 89336",
-    name: "Harshal Priyadarshi",
+    contactNo: "",
+    name: "",
     email: "",
     emailErrorMessage: "",
     addressLine1: "",
@@ -30,7 +40,39 @@ class AccountProfile extends Component {
     country: "India",
     upiId: "",
     upiIdErrorMessage: "",
+    idToken: "fetching",
+    isLoading: true,
+    isSaving: false,
+    response: undefined,
+    showSuccessSnackbar: false,
   };
+
+  componentDidMount() {
+    const queryObj = qs.parse(this.props.location.search);
+    this.setState({ idToken: queryObj.idtoken });
+    getUserProfileApi(queryObj.idtoken)
+      .then((res) => {
+        const data = res.data;
+        const billingAddress = data.billingAddress;
+        this.setState({
+          response: data,
+          name: data.user.givenName + " " + data.user.familyName,
+          contactNo: data.user.phoneNumber ? data.user.phoneNumber : "",
+          email: data.user.emailAddress ? data.user.emailAddress : "",
+          addressLine1: billingAddress ? billingAddress.addressLine1 : "",
+          addressLine2: billingAddress ? billingAddress.addressLine2 : "",
+          city: billingAddress ? billingAddress.city : "",
+          state: billingAddress ? billingAddress.state : "",
+          postalCode: billingAddress ? billingAddress.postalCode : "",
+          upiId: data.upiAddress ? data.upiAddress : "",
+          isLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ idToken: undefined, isLoading: false });
+      });
+  }
 
   hasValidValues = () => {
     let isValid = true;
@@ -58,7 +100,7 @@ class AccountProfile extends Component {
     } else {
       this.setState({ addressLine1ErrorMessage: "" });
     }
-    if (addressLine2.length > 0 && !isValidAddress(addressLine2)) {
+    if (addressLine2.length === 0 || !isValidAddress(addressLine2)) {
       this.setState({
         addressLine2ErrorMessage: "Please enter valid address.",
       });
@@ -99,6 +141,48 @@ class AccountProfile extends Component {
   handleSave = (e) => {
     e.preventDefault();
     const isValid = this.hasValidValues();
+
+    if (isValid) {
+      this.setState({ isSaving: true });
+      const {
+        email,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        postalCode,
+        country,
+        upiId,
+        idToken,
+      } = this.state;
+
+      let data = {
+        user: {
+          emailAddress: email,
+        },
+        billingAddress: {
+          AddressLine1: addressLine1,
+          AddressLine2: addressLine2,
+          City: city,
+          State: state,
+          PostalCode: postalCode,
+          Country: country,
+        },
+        upiAddress: upiId,
+      };
+
+      saveUserProfileApi(idToken, data)
+        .then((res) => {
+          this.setState({ showSuccessSnackbar: true, isSaving: false });
+        })
+        .catch((err) => {
+          console.error(err.message);
+          this.setState({
+            idToken: undefined,
+            isSaving: false,
+          });
+        });
+    }
   };
 
   render() {
@@ -121,7 +205,28 @@ class AccountProfile extends Component {
       stateErrorMessage,
       postalCodeErrorMessage,
       upiIdErrorMessage,
+      idToken,
+      isLoading,
+      showSuccessSnackbar,
+      isSaving,
     } = this.state;
+
+    if (!idToken || idToken.length === 0) {
+      return (
+        <div className="page-not-found-container">
+          <img src={pageExpiredImage} alt="Expired" />
+          <p className="text-center mt-3">Your Page has expired.</p>
+        </div>
+      );
+    }
+
+    if (isLoading) {
+      return (
+        <div className="d-flex align-items-center justify-content-center h-100">
+          <CircularProgress />
+        </div>
+      );
+    }
 
     return (
       <div className="account-profile-container">
@@ -144,7 +249,7 @@ class AccountProfile extends Component {
             <span className="name">{name}</span>
           </div>
           <div className="group email-group">
-            <span className="label">Email Address</span>
+            <span className="label">Email Address *</span>
             <input
               type="email"
               value={email}
@@ -158,7 +263,7 @@ class AccountProfile extends Component {
           <div className="billing-group">
             <h3>Billing Address</h3>
             <div className="group">
-              <span className="label">Address Line 1</span>
+              <span className="label">Address Line 1 *</span>
               <input
                 type="text"
                 value={addressLine1}
@@ -171,7 +276,7 @@ class AccountProfile extends Component {
               ) : null}
             </div>
             <div className="group">
-              <span className="label">Address Line 2</span>
+              <span className="label">Address Line 2 *</span>
               <input
                 type="text"
                 value={addressLine2}
@@ -185,7 +290,7 @@ class AccountProfile extends Component {
             </div>
             <div className="d-grid">
               <div className="group">
-                <span className="label">City</span>
+                <span className="label">City *</span>
                 <input
                   type="text"
                   value={city}
@@ -196,7 +301,7 @@ class AccountProfile extends Component {
                 ) : null}
               </div>
               <div className="group">
-                <span className="label">State</span>
+                <span className="label">State *</span>
                 <input
                   type="text"
                   value={state}
@@ -209,7 +314,7 @@ class AccountProfile extends Component {
             </div>
             <div className="d-grid">
               <div className="group">
-                <span className="label">Postal Code</span>
+                <span className="label">Postal Code *</span>
                 <input
                   type="text"
                   value={postalCode}
@@ -231,7 +336,7 @@ class AccountProfile extends Component {
           <div className="payment-group">
             <h3>Payment Information</h3>
             <div className="group">
-              <span className="label">UPI ID</span>
+              <span className="label">UPI ID *</span>
               <input
                 type="text"
                 value={upiId}
@@ -246,9 +351,20 @@ class AccountProfile extends Component {
           <button
             className="btn btn-primary save-button"
             onClick={this.handleSave}
+            disabled={isSaving}
           >
-            SAVE
+            {isSaving ? "Saving..." : "SAVE"}
           </button>
+
+          <Snackbar
+            open={showSuccessSnackbar}
+            autoHideDuration={5000}
+            onClose={() => {
+              this.setState({ showSuccessSnackbar: false });
+            }}
+          >
+            <Alert severity="success">Profile data saved successfully.</Alert>
+          </Snackbar>
         </div>
       </div>
     );
