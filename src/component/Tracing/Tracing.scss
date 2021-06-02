@@ -94,7 +94,10 @@
   .map-holder {
     flex: 1;
 
-    
+    .gm-fullscreen-control,
+    .gmnoprint {
+      display: none;
+    }
   }
 
   .footer-section {
