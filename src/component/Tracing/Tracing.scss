@@ -1,4 +1,8 @@
 .tracing-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
   .top-row {
     display: flex;
     justify-content: space-between;
@@ -85,6 +89,12 @@
         }
       }
     }
+  }
+
+  .map-holder {
+    flex: 1;
+
+    
   }
 
   .footer-section {

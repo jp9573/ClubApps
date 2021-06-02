@@ -26,6 +26,7 @@ import flightIcon from "../../asset/tracing/flight.svg";
 import dinnerIcon from "../../asset/tracing/dinner.svg";
 import bedIcon from "../../asset/tracing/bed.svg";
 import stethoscopeIcon from "../../asset/tracing/stethoscope.svg";
+import movingCarIcon from "../../asset/tracing/movingCar.svg";
 import GoogleMapReact from "google-map-react";
 
 class Tracing extends Component {
@@ -33,6 +34,7 @@ class Tracing extends Component {
     idToken: "fetching",
     trackerType: "",
     tracingData: {},
+    currentGeoLocation: undefined,
     tracingUpdateData: undefined,
     sourceData: undefined,
     destinationData: undefined,
@@ -91,14 +93,20 @@ class Tracing extends Component {
         this.setState(
           {
             tracingData: res.data,
+            currentGeoLocation: {
+              lat: res.data.currentGeoLocation.latitude,
+              lng: res.data.currentGeoLocation.longitude,
+            },
             isLoading: false,
           },
           () => {
-            this.getTrackingUpdateData();
+            // this.getTrackingUpdateData();
             this.getSourceData();
             this.getDestinationData();
             this.getBusinessData();
             this.getVendorData();
+
+            setInterval(this.getTrackingUpdateData, 15000);
           }
         );
       })
@@ -115,6 +123,10 @@ class Tracing extends Component {
       .then((res) => {
         this.setState({
           tracingUpdateData: res.data,
+          currentGeoLocation: {
+            lat: res.data.currentGeoLocation.latitude,
+            lng: res.data.currentGeoLocation.longitude,
+          },
           isTracingUpdateDataLoading: false,
         });
       })
@@ -321,6 +333,37 @@ class Tracing extends Component {
     );
   };
 
+  getMapJSX = () => {
+    const { currentGeoLocation } = this.state;
+
+    if (!currentGeoLocation) {
+      return (
+        <div className="d-flex align-items-center justify-content-center h-100">
+          <CircularProgress />
+        </div>
+      );
+    }
+
+    return (
+      <GoogleMapReact
+        bootstrapURLKeys={{
+          key: process.env.REACT_APP_MAPS_API_KEY,
+          language: "en",
+        }}
+        defaultCenter={currentGeoLocation}
+        center={currentGeoLocation}
+        defaultZoom={15}
+      >
+        <img
+          src={movingCarIcon}
+          alt="Car"
+          lat={currentGeoLocation.lat}
+          lng={currentGeoLocation.lng}
+        />
+      </GoogleMapReact>
+    );
+  };
+
   render() {
     const { idToken, trackerType, isLoading } = this.state;
 
@@ -355,16 +398,7 @@ class Tracing extends Component {
 
         <div className="detail-row">{this.getServiceDetailJSX()}</div>
 
-        <div className="map-holder">
-          {/* <GoogleMapReact
-            bootstrapURLKeys={{
-              key: process.env.REACT_APP_MAPS_API_KEY,
-              language: "en",
-            }}
-            defaultCenter={this.props.center}
-            defaultZoom={this.props.zoom}
-          ></GoogleMapReact> */}
-        </div>
+        <div className="map-holder">{this.getMapJSX()}</div>
 
         <div className="footer-section">
           {this.getCustomAddressBarJSX()}
