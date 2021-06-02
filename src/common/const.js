@@ -11,5 +11,5 @@ export const routesMapping = {
   "/grocery/orderPortal": OrderPortal,
   "/ticket/:eventId?": Ticket,
   "/user/profile": AccountProfile,
-  "/tracing/:trackerType?": Tracing,
+  "/specs/tracking/:trackerType?": Tracing,
 };
