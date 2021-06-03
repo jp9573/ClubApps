@@ -33,6 +33,16 @@
     }
   }
 
+  .loading-container {
+    position: absolute;
+    left: 50%;
+    width: 100%;
+    transform: translate(-50%, 0);
+    bottom: 0;
+    top: 0;
+    background: #0000004f;
+  }
+
   .profile-card {
     background: #ffffff;
     border-radius: 10px;

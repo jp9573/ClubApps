@@ -279,16 +279,13 @@ class AccountProfile extends Component {
       );
     }
 
-    if (isLoading) {
-      return (
-        <div className="d-flex align-items-center justify-content-center h-100">
-          <CircularProgress />
-        </div>
-      );
-    }
-
     return (
       <div className="account-profile-container">
+        {isLoading ? (
+          <div className="d-flex align-items-center justify-content-center h-100 loading-container">
+            <CircularProgress />
+          </div>
+        ) : null}
         <div className="top-section">
           <img src={logo} alt="Logo" />
         </div>
