@@ -65,14 +65,6 @@ export function getTicketInfoApi(token, eventId) {
   });
 }
 
-export function getTracingInfoApi(token, trackerType) {
-  return axiosInstance.get(`/TrackingProvider?trackertype=${trackerType}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
-
 export function getUserProfileApi(token) {
   return axiosInstance.get(`/Profile`, {
     headers: {
@@ -83,6 +75,46 @@ export function getUserProfileApi(token) {
 
 export function saveUserProfileApi(token, data) {
   return axiosInstance.post(`/ProfileUpdate`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getTracingInfoApi(token, trackerType) {
+  return axiosInstance.get(`/Tracking?trackerType=${trackerType}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getTracingUpdateApi(token, trackerId) {
+  return axiosInstance.get(`/TrackingUpdate?trackerId=${trackerId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getTracingPlaceApi(token, placeId) {
+  return axiosInstance.get(`/TrackingPlace?id=${placeId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getTracingBusinessDetailApi(token, id) {
+  return axiosInstance.get(`/TrackingProvider?id=${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getVendorDetailApi(token, id) {
+  return axiosInstance.get(`/TrackingPerson?id=${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
