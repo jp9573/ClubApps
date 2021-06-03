@@ -19,6 +19,7 @@ publish-dev:
     - echo "REACT_APP_LINKMANAGER_API_URL=$TEST_REACT_APP_LINKMANAGER_API_URL" >> .env
     - echo "REACT_APP_LINK_RESOLVER_API_KEY=$TEST_REACT_APP_LINK_RESOLVER_API_KEY" >> .env
     - echo "REACT_APP_APPLINK_DOMAIN=$TEST_REACT_APP_APPLINK_DOMAIN" >> .env
+    - echo "REACT_APP_MAPS_API_KEY=$TEST_REACT_APP_MAPS_API_KEY" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
@@ -39,6 +40,7 @@ publish-test:
     - echo "REACT_APP_LINKMANAGER_API_URL=$TEST_REACT_APP_LINKMANAGER_API_URL" >> .env
     - echo "REACT_APP_LINK_RESOLVER_API_KEY=$TEST_REACT_APP_LINK_RESOLVER_API_KEY" >> .env
     - echo "REACT_APP_APPLINK_DOMAIN=$TEST_REACT_APP_APPLINK_DOMAIN" >> .env
+    - echo "REACT_APP_MAPS_API_KEY=$TEST_REACT_APP_MAPS_API_KEY" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
@@ -61,6 +63,7 @@ publish-prod:
     - echo "REACT_APP_LINKMANAGER_API_URL=$PROD_REACT_APP_LINKMANAGER_API_URL" >> .env
     - echo "REACT_APP_LINK_RESOLVER_API_KEY=$PROD_REACT_APP_LINK_RESOLVER_API_KEY" >> .env
     - echo "REACT_APP_APPLINK_DOMAIN=$PROD_REACT_APP_APPLINK_DOMAIN" >> .env
+    - echo "REACT_APP_MAPS_API_KEY=$PROD_REACT_APP_MAPS_API_KEY" >> .env
     - cat .env
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
