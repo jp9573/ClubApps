@@ -1,4 +1,8 @@
 .tracing-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
   .top-row {
     display: flex;
     justify-content: space-between;
@@ -75,10 +79,24 @@
         justify-content: center;
         margin: 0 16px;
 
+        img {
+          width: 48px;
+          height: 48px;
+        }
+
         span {
           margin-top: 0.2rem;
         }
       }
+    }
+  }
+
+  .map-holder {
+    flex: 1;
+
+    .gm-fullscreen-control,
+    .gmnoprint {
+      display: none;
     }
   }
 

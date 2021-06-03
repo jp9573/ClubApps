@@ -3,7 +3,13 @@ import "./Tracing.scss";
 import qs from "query-string";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import { getTracingInfoApi } from "../../common/Api";
+import {
+  getTracingInfoApi,
+  getTracingUpdateApi,
+  getTracingPlaceApi,
+  getTracingBusinessDetailApi,
+  getVendorDetailApi,
+} from "../../common/Api";
 import logo from "../../asset/tracing/logo.svg";
 import uberIcon from "../../asset/tracing/uber.svg";
 import swiggyIcon from "../../asset/tracing/swiggy.svg";
@@ -20,27 +26,46 @@ import flightIcon from "../../asset/tracing/flight.svg";
 import dinnerIcon from "../../asset/tracing/dinner.svg";
 import bedIcon from "../../asset/tracing/bed.svg";
 import stethoscopeIcon from "../../asset/tracing/stethoscope.svg";
+import movingCarIcon from "../../asset/tracing/movingCar.svg";
+import GoogleMapReact from "google-map-react";
 
 class Tracing extends Component {
   state = {
     idToken: "fetching",
     trackerType: "",
-    tracingInfo: {},
+    tracingData: {},
+    currentGeoLocation: undefined,
+    tracingUpdateData: undefined,
+    sourceData: undefined,
+    destinationData: undefined,
+    businessData: undefined,
+    vendorData: undefined,
     isLoading: true,
+    isTracingUpdateDataLoading: true,
+    isSourceDataLoading: true,
+    isDestinationDataLoading: true,
+    isBusinessDataLoading: true,
+    isVendorDataLoading: true,
     selectedDestination: undefined,
     destinationSearchBarValue: "",
   };
+  typeMapping = {
+    cab: "CAB_TRACKER",
+    towing: "TOW_TRUCK_TRACKER",
+    ambulance: "AMBULANCE_TRACKER",
+    delivery: "FOOD_DELIVERY_TRACKER",
+  };
   secondaryLogoMapping = {
-    CAB: uberIcon,
-    FOOD_DELIVERY: swiggyIcon,
-    AMBULANCE: fortisIcon,
-    VEHICLE_REPAIR: suzukiIcon,
+    CAB_TRACKER: uberIcon,
+    FOOD_DELIVERY_TRACKER: swiggyIcon,
+    AMBULANCE_TRACKER: fortisIcon,
+    TOW_TRUCK_TRACKER: suzukiIcon,
   };
   detailIconMapping = {
-    CAB: carIcon,
-    FOOD_DELIVERY: deliveryIcon,
-    AMBULANCE: ambulanceIcon,
-    VEHICLE_REPAIR: twoTruckIcon,
+    CAB_TRACKER: carIcon,
+    FOOD_DELIVERY_TRACKER: deliveryIcon,
+    AMBULANCE_TRACKER: ambulanceIcon,
+    TOW_TRUCK_TRACKER: twoTruckIcon,
   };
   customDestinationIconMapping = {
     AIRPORT: flightIcon,
@@ -54,7 +79,7 @@ class Tracing extends Component {
     this.setState(
       {
         idToken: queryObj.idtoken,
-        trackerType: this.props.match.params.trackerType,
+        trackerType: this.typeMapping[this.props.match.params.trackerType],
       },
       this.fetchTracingInfo
     );
@@ -62,12 +87,27 @@ class Tracing extends Component {
 
   fetchTracingInfo = () => {
     const { idToken, trackerType } = this.state;
+
     getTracingInfoApi(idToken, trackerType)
       .then((res) => {
-        this.setState({
-          tracingInfo: res.data,
-          isLoading: false,
-        });
+        this.setState(
+          {
+            tracingData: res.data,
+            currentGeoLocation: {
+              lat: res.data.currentGeoLocation.latitude,
+              lng: res.data.currentGeoLocation.longitude,
+            },
+            isLoading: false,
+          },
+          () => {
+            this.getDestinationData();
+            this.getSourceData();
+            this.getBusinessData();
+            this.getVendorData();
+
+            setInterval(this.getTrackingUpdateData, 15000);
+          }
+        );
       })
       .catch((err) => {
         console.error(err.message);
@@ -75,28 +115,157 @@ class Tracing extends Component {
       });
   };
 
+  getTrackingUpdateData = () => {
+    const { idToken, tracingData } = this.state;
+
+    getTracingUpdateApi(idToken, tracingData.id)
+      .then((res) => {
+        this.setState(
+          {
+            tracingUpdateData: res.data,
+            currentGeoLocation: {
+              lat: res.data.currentGeoLocation.latitude,
+              lng: res.data.currentGeoLocation.longitude,
+            },
+            isTracingUpdateDataLoading: false,
+          },
+          this.loadETAData
+        );
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isTracingUpdateDataLoading: false });
+      });
+  };
+
+  getSourceData = () => {
+    const { idToken, tracingData } = this.state;
+
+    getTracingPlaceApi(idToken, tracingData.sourceId)
+      .then((res) => {
+        this.setState({
+          sourceData: res.data,
+          isSourceDataLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isSourceDataLoading: false });
+      });
+  };
+
+  getDestinationData = () => {
+    const { idToken, tracingData } = this.state;
+
+    getTracingPlaceApi(idToken, tracingData.destinationId)
+      .then((res) => {
+        this.setState(
+          {
+            destinationData: res.data,
+            isDestinationDataLoading: false,
+          },
+          this.loadETAData
+        );
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isDestinationDataLoading: false });
+      });
+  };
+
+  getBusinessData = () => {
+    const { idToken, tracingData } = this.state;
+
+    getTracingBusinessDetailApi(idToken, tracingData.businessId)
+      .then((res) => {
+        this.setState({
+          businessData: res.data,
+          isBusinessDataLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isBusinessDataLoading: false });
+      });
+  };
+
+  getVendorData = () => {
+    const { idToken, tracingData } = this.state;
+
+    getVendorDetailApi(idToken, tracingData.vendorId)
+      .then((res) => {
+        this.setState({
+          vendorData: res.data,
+          isVendorDataLoading: false,
+        });
+      })
+      .catch((err) => {
+        console.error(err.message);
+        this.setState({ isVendorDataLoading: false });
+      });
+  };
+
+  loadETAData = () => {
+    const { currentGeoLocation, destinationData } = this.state;
+
+    if (!currentGeoLocation || !destinationData) return;
+    const destination = {
+      lat: destinationData.geoLocation.latitude,
+      lng: destinationData.geoLocation.longitude,
+    };
+    new window.google.maps.DistanceMatrixService().getDistanceMatrix(
+      {
+        origins: [currentGeoLocation],
+        destinations: [destination],
+        travelMode: window.google.maps.TravelMode.DRIVING,
+        unitSystem: window.google.maps.UnitSystem.IMPERIAL,
+        avoidHighways: false,
+        avoidTolls: false,
+      },
+      (response, status) => {
+        if (status !== "OK") {
+          console.error("Error was: " + status);
+        } else {
+          this.setState({
+            tracingData: {
+              ...this.state.tracingData,
+              arrivalInMinutes: response.rows[0].elements[0].duration.text,
+            },
+          });
+        }
+      }
+    );
+  };
+
   getServiceDetailJSX = () => {
-    const { trackerType, tracingInfo } = this.state;
-    const { secureOtp, source, destination, serviceProvider } = tracingInfo;
-    const { agent, additionalFields } = serviceProvider;
+    const {
+      trackerType,
+      tracingData,
+      vendorData,
+      sourceData,
+      destinationData,
+    } = this.state;
+    const { verificationCode } = tracingData;
+    const { givenName, vehicleNumber } = vendorData || {};
 
     return (
       <>
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
             <img src={this.detailIconMapping[trackerType]} alt="Detail" />
-            {additionalFields ? (
-              <span className="vehicle-no">{additionalFields.VehicleInfo}</span>
-            ) : null}
+            <span className="vehicle-no">
+              {vehicleNumber ? vehicleNumber : "Fetching..."}
+            </span>
           </div>
           <div className="otp">
-            OTP <b>{secureOtp}</b>
+            OTP <b>{verificationCode ? verificationCode : "Fetching..."}</b>
           </div>
         </div>
         <div className="service-details">
           <div className="location-content">
             <div className="first-row">
-              <RadioButtonUncheckedIcon /> <span>{source.name}</span>
+              <RadioButtonUncheckedIcon />{" "}
+              <span>{sourceData ? sourceData.name : "Fetching..."}</span>
             </div>
             <div className="dot"></div>
             <div className="dot"></div>
@@ -104,17 +273,19 @@ class Tracing extends Component {
             <div className="last-row">
               <RoomIcon />{" "}
               <span>
-                {destination
-                  ? destination.name
-                    ? destination.name
+                {destinationData
+                  ? destinationData.name
+                    ? destinationData.name
                     : "Current Location"
-                  : "Waiting for update"}
+                  : "Fetching..."}
               </span>
             </div>
           </div>
           <div className="agent-content">
-            <img src={agent.photoUrl ? agent.photoUrl : userIcon} alt="User" />
-            <span className="name">{agent.givenName}</span>
+            <img src={userIcon} alt="User" />
+            <span className="name">
+              {givenName ? givenName : "Fetching..."}
+            </span>
           </div>
         </div>
       </>
@@ -122,23 +293,25 @@ class Tracing extends Component {
   };
 
   getStatusJSX = () => {
-    const { tracingInfo } = this.state;
-    const { status } = tracingInfo;
+    const { tracingData } = this.state;
+    const { arrivalStatus, arrivalInMinutes } = tracingData;
 
-    if (!status) return null;
+    if (!arrivalStatus) return null;
 
     return (
       <>
         <span className="label">ARRIVING IN</span>
-        <span className="arrival-time">{status.arrivalInMinutes} min</span>
-        <span className="status-label">{status.status}</span>
+        <span className="arrival-time">
+          {arrivalInMinutes ? arrivalInMinutes : "Fetching..."}
+        </span>
+        <span className="status-label">{arrivalStatus}</span>
       </>
     );
   };
 
   getCustomDestinationsJSX = () => {
-    const { tracingInfo, selectedDestination } = this.state;
-    const { customDestinations } = tracingInfo;
+    const { tracingData, selectedDestination } = this.state;
+    const { customDestinations } = tracingData;
 
     if (!customDestinations) return null;
 
@@ -199,6 +372,37 @@ class Tracing extends Component {
     );
   };
 
+  getMapJSX = () => {
+    const { currentGeoLocation } = this.state;
+
+    if (!currentGeoLocation) {
+      return (
+        <div className="d-flex align-items-center justify-content-center h-100">
+          <CircularProgress />
+        </div>
+      );
+    }
+
+    return (
+      <GoogleMapReact
+        bootstrapURLKeys={{
+          key: process.env.REACT_APP_MAPS_API_KEY,
+          language: "en",
+        }}
+        defaultCenter={currentGeoLocation}
+        center={currentGeoLocation}
+        defaultZoom={15}
+      >
+        <img
+          src={movingCarIcon}
+          alt="Car"
+          lat={currentGeoLocation.lat}
+          lng={currentGeoLocation.lng}
+        />
+      </GoogleMapReact>
+    );
+  };
+
   render() {
     const { idToken, trackerType, isLoading } = this.state;
 
@@ -233,7 +437,7 @@ class Tracing extends Component {
 
         <div className="detail-row">{this.getServiceDetailJSX()}</div>
 
-        <div className="map-holder"></div>
+        <div className="map-holder">{this.getMapJSX()}</div>
 
         <div className="footer-section">
           {this.getCustomAddressBarJSX()}
@@ -245,6 +449,11 @@ class Tracing extends Component {
             <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
         </div>
+
+        {/* <script
+          src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=&v=weekly"
+          async
+        ></script> */}
       </div>
     );
   }
