@@ -100,9 +100,8 @@ class Tracing extends Component {
             isLoading: false,
           },
           () => {
-            // this.getTrackingUpdateData();
-            this.getSourceData();
             this.getDestinationData();
+            this.getSourceData();
             this.getBusinessData();
             this.getVendorData();
 
@@ -121,14 +120,17 @@ class Tracing extends Component {
 
     getTracingUpdateApi(idToken, tracingData.id)
       .then((res) => {
-        this.setState({
-          tracingUpdateData: res.data,
-          currentGeoLocation: {
-            lat: res.data.currentGeoLocation.latitude,
-            lng: res.data.currentGeoLocation.longitude,
+        this.setState(
+          {
+            tracingUpdateData: res.data,
+            currentGeoLocation: {
+              lat: res.data.currentGeoLocation.latitude,
+              lng: res.data.currentGeoLocation.longitude,
+            },
+            isTracingUpdateDataLoading: false,
           },
-          isTracingUpdateDataLoading: false,
-        });
+          this.loadETAData
+        );
       })
       .catch((err) => {
         console.error(err.message);
@@ -157,10 +159,13 @@ class Tracing extends Component {
 
     getTracingPlaceApi(idToken, tracingData.destinationId)
       .then((res) => {
-        this.setState({
-          destinationData: res.data,
-          isDestinationDataLoading: false,
-        });
+        this.setState(
+          {
+            destinationData: res.data,
+            isDestinationDataLoading: false,
+          },
+          this.loadETAData
+        );
       })
       .catch((err) => {
         console.error(err.message);
@@ -198,6 +203,38 @@ class Tracing extends Component {
         console.error(err.message);
         this.setState({ isVendorDataLoading: false });
       });
+  };
+
+  loadETAData = () => {
+    const { currentGeoLocation, destinationData } = this.state;
+
+    if (!currentGeoLocation || !destinationData) return;
+    const destination = {
+      lat: destinationData.geoLocation.latitude,
+      lng: destinationData.geoLocation.longitude,
+    };
+    new window.google.maps.DistanceMatrixService().getDistanceMatrix(
+      {
+        origins: [currentGeoLocation],
+        destinations: [destination],
+        travelMode: window.google.maps.TravelMode.DRIVING,
+        unitSystem: window.google.maps.UnitSystem.IMPERIAL,
+        avoidHighways: false,
+        avoidTolls: false,
+      },
+      (response, status) => {
+        if (status !== "OK") {
+          console.error("Error was: " + status);
+        } else {
+          this.setState({
+            tracingData: {
+              ...this.state.tracingData,
+              arrivalInMinutes: response.rows[0].elements[0].duration.text,
+            },
+          });
+        }
+      }
+    );
   };
 
   getServiceDetailJSX = () => {
@@ -257,14 +294,16 @@ class Tracing extends Component {
 
   getStatusJSX = () => {
     const { tracingData } = this.state;
-    const { arrivalStatus } = tracingData;
+    const { arrivalStatus, arrivalInMinutes } = tracingData;
 
     if (!arrivalStatus) return null;
 
     return (
       <>
         <span className="label">ARRIVING IN</span>
-        <span className="arrival-time">{"1"} min</span>
+        <span className="arrival-time">
+          {arrivalInMinutes ? arrivalInMinutes : "Fetching..."}
+        </span>
         <span className="status-label">{arrivalStatus}</span>
       </>
     );
@@ -410,6 +449,11 @@ class Tracing extends Component {
             <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
         </div>
+
+        {/* <script
+          src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=&v=weekly"
+          async
+        ></script> */}
       </div>
     );
   }
