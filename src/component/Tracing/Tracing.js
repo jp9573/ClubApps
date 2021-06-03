@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 import "./Tracing.scss";
 import qs from "query-string";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
@@ -9,6 +9,7 @@ import {
   getTracingPlaceApi,
   getTracingBusinessDetailApi,
   getVendorDetailApi,
+  updateDestinationApi,
 } from "../../common/Api";
 import logo from "../../asset/tracing/logo.svg";
 import uberIcon from "../../asset/tracing/uber.svg";
@@ -25,9 +26,14 @@ import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 import flightIcon from "../../asset/tracing/flight.svg";
 import dinnerIcon from "../../asset/tracing/dinner.svg";
 import bedIcon from "../../asset/tracing/bed.svg";
-import stethoscopeIcon from "../../asset/tracing/stethoscope.svg";
-import movingCarIcon from "../../asset/tracing/movingCar.svg";
-import GoogleMapReact from "google-map-react";
+import hospitalIcon from "../../asset/tracing/hospital.svg";
+import homeIcon from "../../asset/tracing/home.svg";
+import workIcon from "../../asset/tracing/suitcase.svg";
+import trainIcon from "../../asset/tracing/train.svg";
+import metroIcon from "../../asset/tracing/metro.svg";
+import busIcon from "../../asset/tracing/bus.svg";
+import { withScriptjs } from "react-google-maps";
+import Map from "./Map/Map";
 
 class Tracing extends Component {
   state = {
@@ -70,8 +76,13 @@ class Tracing extends Component {
   customDestinationIconMapping = {
     AIRPORT: flightIcon,
     RESTAURANT: dinnerIcon,
-    HOTEL: bedIcon,
-    HOSPITAL: stethoscopeIcon,
+    HOTELROOM: bedIcon,
+    HOSPITAL: hospitalIcon,
+    HOME: homeIcon,
+    WORK: workIcon,
+    TRAIN_STATION: trainIcon,
+    METRO_STATION: metroIcon,
+    BUS_STATION: busIcon,
   };
 
   componentDidMount() {
@@ -213,28 +224,32 @@ class Tracing extends Component {
       lat: destinationData.geoLocation.latitude,
       lng: destinationData.geoLocation.longitude,
     };
-    new window.google.maps.DistanceMatrixService().getDistanceMatrix(
-      {
-        origins: [currentGeoLocation],
-        destinations: [destination],
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        unitSystem: window.google.maps.UnitSystem.IMPERIAL,
-        avoidHighways: false,
-        avoidTolls: false,
-      },
-      (response, status) => {
-        if (status !== "OK") {
-          console.error("Error was: " + status);
-        } else {
-          this.setState({
-            tracingData: {
-              ...this.state.tracingData,
-              arrivalInMinutes: response.rows[0].elements[0].duration.text,
-            },
-          });
+    try {
+      new window.google.maps.DistanceMatrixService().getDistanceMatrix(
+        {
+          origins: [currentGeoLocation],
+          destinations: [destination],
+          travelMode: window.google.maps.TravelMode.DRIVING,
+          unitSystem: window.google.maps.UnitSystem.IMPERIAL,
+          avoidHighways: false,
+          avoidTolls: false,
+        },
+        (response, status) => {
+          if (status !== "OK") {
+            console.error("Error was: " + status);
+          } else {
+            this.setState({
+              tracingData: {
+                ...this.state.tracingData,
+                arrivalInMinutes: response.rows[0].elements[0].duration.text,
+              },
+            });
+          }
         }
-      }
-    );
+      );
+    } catch (error) {
+      setTimeout(this.loadETAData, 1000);
+    }
   };
 
   getServiceDetailJSX = () => {
@@ -348,7 +363,14 @@ class Tracing extends Component {
 
     if (!selectedDestination) return null;
 
-    const onUpdateDestination = () => {};
+    const onUpdateDestination = () => {
+      const { idToken, selectedDestination } = this.state;
+      updateDestinationApi(idToken, selectedDestination)
+        .then((res) => {})
+        .catch((err) => {
+          console.error(err.message);
+        });
+    };
 
     return (
       <div className="custom-address-bar">
@@ -373,9 +395,9 @@ class Tracing extends Component {
   };
 
   getMapJSX = () => {
-    const { currentGeoLocation } = this.state;
+    const { currentGeoLocation, sourceData, destinationData } = this.state;
 
-    if (!currentGeoLocation) {
+    if (!currentGeoLocation || !sourceData || !destinationData) {
       return (
         <div className="d-flex align-items-center justify-content-center h-100">
           <CircularProgress />
@@ -383,24 +405,76 @@ class Tracing extends Component {
       );
     }
 
+    const MapLoader = withScriptjs(Map);
+
     return (
-      <GoogleMapReact
-        bootstrapURLKeys={{
-          key: process.env.REACT_APP_MAPS_API_KEY,
-          language: "en",
+      <MapLoader
+        googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_MAPS_API_KEY}`}
+        loadingElement={<div style={{ height: `100%` }} />}
+        currentGeoLocation={currentGeoLocation}
+        source={{
+          lat: sourceData.geoLocation.latitude,
+          lng: sourceData.geoLocation.longitude,
         }}
-        defaultCenter={currentGeoLocation}
-        center={currentGeoLocation}
-        defaultZoom={15}
-      >
-        <img
-          src={movingCarIcon}
-          alt="Car"
-          lat={currentGeoLocation.lat}
-          lng={currentGeoLocation.lng}
-        />
-      </GoogleMapReact>
+        destination={{
+          lat: destinationData.geoLocation.latitude,
+          lng: destinationData.geoLocation.longitude,
+        }}
+      />
     );
+
+    // return (
+    //   <>
+    //     <GoogleMap
+    //       bootstrapURLKeys={{
+    //         key: process.env.REACT_APP_MAPS_API_KEY,
+    //         language: "en",
+    //       }}
+    //       defaultCenter={currentGeoLocation}
+    //       center={currentGeoLocation}
+    //       defaultZoom={15}
+    //       onGoogleApiLoaded={({ map, maps }) => {
+    //         this.setState({ map: map, maps: maps, mapLoaded: true });
+    //       }}
+    //       yesIWantToUseGoogleMapApiInternals
+    //     >
+    //       <img
+    //         src={movingCarIcon}
+    //         alt="Car"
+    //         lat={currentGeoLocation.lat}
+    //         lng={currentGeoLocation.lng}
+    //       />
+    //       {sourceData ? (
+    //         <RoomIcon
+    //           style={{ fill: "#000000" }}
+    //           lat={sourceData.geoLocation.latitude}
+    //           lng={sourceData.geoLocation.longitude}
+    //         />
+    //       ) : null}
+    //       {destinationData ? (
+    //         <RoomIcon
+    //           style={{ fill: "red" }}
+    //           lat={destinationData.geoLocation.latitude}
+    //           lng={destinationData.geoLocation.longitude}
+    //         />
+    //       ) : null}
+    //     </GoogleMap>
+    //     {mapLoaded && sourceData && destinationData && (
+    //       <Polyline
+    //         map={map}
+    //         maps={maps}
+    //         origin={{
+    //           lat: sourceData.geoLocation.latitude,
+    //           long: sourceData.geoLocation.longitude,
+    //         }}
+    //         destination={{
+    //           lat: destinationData.geoLocation.latitude,
+    //           long: destinationData.geoLocation.longitude,
+    //         }}
+    //       />
+    //     )}
+    //   </>
+    // );
   };
 
   render() {
@@ -449,13 +523,60 @@ class Tracing extends Component {
             <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
         </div>
-
-        {/* <script
-          src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=&v=weekly"
-          async
-        ></script> */}
       </div>
     );
+  }
+}
+
+class Polyline extends PureComponent {
+  componentWillUpdate() {
+    this.line.setMap(null);
+  }
+
+  componentWillUnmount() {
+    this.line.setMap(null);
+  }
+
+  getPaths() {
+    const { origin, destination } = this.props;
+
+    return [
+      { lat: Number(origin.lat), lng: Number(origin.long) },
+      { lat: Number(destination.lat), lng: Number(destination.long) },
+    ];
+  }
+
+  render() {
+    const Polyline = this.props.maps.Polyline;
+
+    const renderedPolyline = this.renderPolyline();
+    const paths = { path: this.getPaths() };
+
+    this.line = new Polyline(Object.assign({}, renderedPolyline, paths));
+
+    this.line.setMap(this.props.map);
+
+    return null;
+  }
+
+  renderPolyline() {
+    return {
+      geodesic: true,
+      strokeColor: this.props.color || "#000000",
+      strokeOpacity: 1,
+      strokeWeight: 4,
+    };
+  }
+}
+
+class Normal extends Polyline {
+  renderPolyline() {
+    return {
+      geodesic: true,
+      strokeColor: this.props.color || "#ffffff",
+      strokeOpacity: 1,
+      strokeWeight: 4,
+    };
   }
 }
 
