@@ -32,8 +32,14 @@ import workIcon from "../../asset/tracing/suitcase.svg";
 import trainIcon from "../../asset/tracing/train.svg";
 import metroIcon from "../../asset/tracing/metro.svg";
 import busIcon from "../../asset/tracing/bus.svg";
-import { withScriptjs } from "react-google-maps";
-import Map from "./Map/Map";
+import {
+  GoogleMap,
+  LoadScript,
+  Marker,
+  DirectionsRenderer,
+  DirectionsService,
+} from "@react-google-maps/api";
+import movingCarIcon from "../../asset/tracing/movingCar.svg";
 
 class Tracing extends Component {
   state = {
@@ -41,19 +47,18 @@ class Tracing extends Component {
     trackerType: "",
     tracingData: {},
     currentGeoLocation: undefined,
-    tracingUpdateData: undefined,
     sourceData: undefined,
     destinationData: undefined,
     businessData: undefined,
     vendorData: undefined,
     isLoading: true,
-    isTracingUpdateDataLoading: true,
     isSourceDataLoading: true,
     isDestinationDataLoading: true,
     isBusinessDataLoading: true,
     isVendorDataLoading: true,
     selectedDestination: undefined,
     destinationSearchBarValue: "",
+    response: null,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -116,7 +121,7 @@ class Tracing extends Component {
             this.getBusinessData();
             this.getVendorData();
 
-            setInterval(this.getTrackingUpdateData, 15000);
+            setInterval(this.getTrackingUpdateData, 60 * 1000);
           }
         );
       })
@@ -127,25 +132,28 @@ class Tracing extends Component {
   };
 
   getTrackingUpdateData = () => {
-    const { idToken, tracingData } = this.state;
+    const { idToken, tracingData, currentGeoLocation } = this.state;
 
     getTracingUpdateApi(idToken, tracingData.id)
       .then((res) => {
-        this.setState(
-          {
-            tracingUpdateData: res.data,
-            currentGeoLocation: {
-              lat: res.data.currentGeoLocation.latitude,
-              lng: res.data.currentGeoLocation.longitude,
+        let newCurrentGeoLocation = {
+          lat: res.data.currentGeoLocation.latitude,
+          lng: res.data.currentGeoLocation.longitude,
+        };
+        if (
+          newCurrentGeoLocation.lat !== currentGeoLocation.lat &&
+          newCurrentGeoLocation.lng !== currentGeoLocation.lng
+        ) {
+          this.setState(
+            {
+              currentGeoLocation: newCurrentGeoLocation,
             },
-            isTracingUpdateDataLoading: false,
-          },
-          this.loadETAData
-        );
+            this.loadETAData
+          );
+        }
       })
       .catch((err) => {
         console.error(err.message);
-        this.setState({ isTracingUpdateDataLoading: false });
       });
   };
 
@@ -405,76 +413,59 @@ class Tracing extends Component {
       );
     }
 
-    const MapLoader = withScriptjs(Map);
+    const origin = {
+      lat: sourceData.geoLocation.latitude,
+      lng: sourceData.geoLocation.longitude,
+    };
+    const destination = {
+      lat: destinationData.geoLocation.latitude,
+      lng: destinationData.geoLocation.longitude,
+    };
+
+    const directionsCallback = (response) => {
+      if (response !== null) {
+        if (response.status === "OK") {
+          this.setState(() => ({
+            response,
+          }));
+        } else {
+          console.log("response: ", response);
+        }
+      }
+    };
 
     return (
-      <MapLoader
-        googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_MAPS_API_KEY}`}
-        loadingElement={<div style={{ height: `100%` }} />}
-        currentGeoLocation={currentGeoLocation}
-        source={{
-          lat: sourceData.geoLocation.latitude,
-          lng: sourceData.geoLocation.longitude,
-        }}
-        destination={{
-          lat: destinationData.geoLocation.latitude,
-          lng: destinationData.geoLocation.longitude,
-        }}
-      />
-    );
+      <LoadScript googleMapsApiKey={process.env.REACT_APP_MAPS_API_KEY}>
+        <GoogleMap
+          mapContainerStyle={{
+            width: "100%",
+            height: "100%",
+          }}
+          center={currentGeoLocation}
+          zoom={10}
+        >
+          <Marker position={currentGeoLocation} icon={movingCarIcon} />
+          {destination !== "" && origin !== "" && (
+            <DirectionsService
+              options={{
+                destination: destination,
+                origin: origin,
+                travelMode: "DRIVING",
+              }}
+              callback={directionsCallback}
+            />
+          )}
 
-    // return (
-    //   <>
-    //     <GoogleMap
-    //       bootstrapURLKeys={{
-    //         key: process.env.REACT_APP_MAPS_API_KEY,
-    //         language: "en",
-    //       }}
-    //       defaultCenter={currentGeoLocation}
-    //       center={currentGeoLocation}
-    //       defaultZoom={15}
-    //       onGoogleApiLoaded={({ map, maps }) => {
-    //         this.setState({ map: map, maps: maps, mapLoaded: true });
-    //       }}
-    //       yesIWantToUseGoogleMapApiInternals
-    //     >
-    //       <img
-    //         src={movingCarIcon}
-    //         alt="Car"
-    //         lat={currentGeoLocation.lat}
-    //         lng={currentGeoLocation.lng}
-    //       />
-    //       {sourceData ? (
-    //         <RoomIcon
-    //           style={{ fill: "#000000" }}
-    //           lat={sourceData.geoLocation.latitude}
-    //           lng={sourceData.geoLocation.longitude}
-    //         />
-    //       ) : null}
-    //       {destinationData ? (
-    //         <RoomIcon
-    //           style={{ fill: "red" }}
-    //           lat={destinationData.geoLocation.latitude}
-    //           lng={destinationData.geoLocation.longitude}
-    //         />
-    //       ) : null}
-    //     </GoogleMap>
-    //     {mapLoaded && sourceData && destinationData && (
-    //       <Polyline
-    //         map={map}
-    //         maps={maps}
-    //         origin={{
-    //           lat: sourceData.geoLocation.latitude,
-    //           long: sourceData.geoLocation.longitude,
-    //         }}
-    //         destination={{
-    //           lat: destinationData.geoLocation.latitude,
-    //           long: destinationData.geoLocation.longitude,
-    //         }}
-    //       />
-    //     )}
-    //   </>
-    // );
+          {this.state.response !== null && (
+            <DirectionsRenderer
+              options={{
+                directions: this.state.response,
+              }}
+            />
+          )}
+        </GoogleMap>
+      </LoadScript>
+    );
   };
 
   render() {
@@ -525,58 +516,6 @@ class Tracing extends Component {
         </div>
       </div>
     );
-  }
-}
-
-class Polyline extends PureComponent {
-  componentWillUpdate() {
-    this.line.setMap(null);
-  }
-
-  componentWillUnmount() {
-    this.line.setMap(null);
-  }
-
-  getPaths() {
-    const { origin, destination } = this.props;
-
-    return [
-      { lat: Number(origin.lat), lng: Number(origin.long) },
-      { lat: Number(destination.lat), lng: Number(destination.long) },
-    ];
-  }
-
-  render() {
-    const Polyline = this.props.maps.Polyline;
-
-    const renderedPolyline = this.renderPolyline();
-    const paths = { path: this.getPaths() };
-
-    this.line = new Polyline(Object.assign({}, renderedPolyline, paths));
-
-    this.line.setMap(this.props.map);
-
-    return null;
-  }
-
-  renderPolyline() {
-    return {
-      geodesic: true,
-      strokeColor: this.props.color || "#000000",
-      strokeOpacity: 1,
-      strokeWeight: 4,
-    };
-  }
-}
-
-class Normal extends Polyline {
-  renderPolyline() {
-    return {
-      geodesic: true,
-      strokeColor: this.props.color || "#ffffff",
-      strokeOpacity: 1,
-      strokeWeight: 4,
-    };
   }
 }
 
