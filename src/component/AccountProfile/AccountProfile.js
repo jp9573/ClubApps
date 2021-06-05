@@ -19,7 +19,7 @@ import MuiAlert from "@material-ui/lab/Alert";
 import MenuItem from "@material-ui/core/MenuItem";
 import Select from "@material-ui/core/Select";
 
-const Alert = (props) => {
+export const Alert = (props) => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
 

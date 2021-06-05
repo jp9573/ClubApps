@@ -48,6 +48,8 @@ import {
   Directions,
   ChildButton,
 } from "react-floating-button-menu";
+import Snackbar from "@material-ui/core/Snackbar";
+import { Alert } from "../AccountProfile/AccountProfile";
 
 class Tracing extends Component {
   state = {
@@ -66,8 +68,11 @@ class Tracing extends Component {
     isVendorDataLoading: true,
     selectedDestination: undefined,
     destinationSearchBarValue: "",
+    customDestinationResultData: undefined,
+    isCustomDestinationResultDataLoading: true,
     response: null,
     isFloatingMenuOpen: false,
+    showRoutingToast: false,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -347,12 +352,33 @@ class Tracing extends Component {
 
     if (!customDestinations) return null;
 
+    const loadCustomDestinationData = (obj) => {
+      const { idToken } = this.state;
+
+      getTracingPlaceApi(idToken, obj.id)
+        .then((res) => {
+          this.setState(
+            {
+              customDestinationResultData: res.data,
+              destinationSearchBarValue: res.data.name,
+              isCustomDestinationResultDataLoading: false,
+            },
+            this.loadETAData
+          );
+        })
+        .catch((err) => {
+          console.error(err.message);
+          this.setState({ isCustomDestinationResultDataLoading: false });
+        });
+    };
+
     const onDestinationClick = (destinationObj) => {
+      loadCustomDestinationData(destinationObj);
       this.setState({
         selectedDestination:
           selectedDestination !== destinationObj ? destinationObj : undefined,
         destinationSearchBarValue:
-          selectedDestination !== destinationObj ? destinationObj.name : "",
+          selectedDestination !== destinationObj ? "Fetching..." : "",
         isFloatingMenuOpen: false,
       });
     };
@@ -408,11 +434,20 @@ class Tracing extends Component {
     const { selectedDestination, destinationSearchBarValue } = this.state;
 
     if (!selectedDestination) return null;
+    const { type } = selectedDestination;
 
     const onUpdateDestination = () => {
       const { idToken, selectedDestination } = this.state;
       updateDestinationApi(idToken, selectedDestination)
-        .then((res) => {})
+        .then((res) => {
+          this.setState({
+            destinationData: this.state.customDestinationResultData,
+            customDestinationResultData: undefined,
+            showRoutingToast: true,
+            selectedDestination: undefined,
+            destinationSearchBarValue: "",
+          });
+        })
         .catch((err) => {
           console.error(err.message);
         });
@@ -430,9 +465,14 @@ class Tracing extends Component {
             this.setState({ destinationSearchBarValue: e.target.value })
           }
         />
+        <span className="label">{type}</span>
         <button
           className="btn btn-success go-button"
           onClick={onUpdateDestination}
+          disabled={
+            destinationSearchBarValue === "" ||
+            destinationSearchBarValue === "Fetching..."
+          }
         >
           GO
         </button>
@@ -507,7 +547,7 @@ class Tracing extends Component {
   };
 
   render() {
-    const { idToken, trackerType, isLoading } = this.state;
+    const { idToken, trackerType, isLoading, showRoutingToast } = this.state;
 
     if (
       !idToken ||
@@ -552,6 +592,17 @@ class Tracing extends Component {
             <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
         </div>
+
+        <Snackbar
+          open={showRoutingToast}
+          autoHideDuration={2000}
+          onClose={() => {
+            this.setState({ showRoutingToast: false });
+          }}
+          anchorOrigin={{ vertical: "center", horizontal: "center" }}
+        >
+          <Alert severity="success">Routing</Alert>
+        </Snackbar>
       </div>
     );
   }
