@@ -40,6 +40,14 @@ import {
   DirectionsService,
 } from "@react-google-maps/api";
 import movingCarIcon from "../../asset/tracing/movingCar.svg";
+import MdAdd from "@material-ui/icons/Add";
+import MdClose from "@material-ui/icons/Clear";
+import {
+  FloatingMenu,
+  MainButton,
+  Directions,
+  ChildButton,
+} from "react-floating-button-menu";
 
 class Tracing extends Component {
   state = {
@@ -59,6 +67,7 @@ class Tracing extends Component {
     selectedDestination: undefined,
     destinationSearchBarValue: "",
     response: null,
+    isFloatingMenuOpen: false,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -333,7 +342,7 @@ class Tracing extends Component {
   };
 
   getCustomDestinationsJSX = () => {
-    const { tracingData, selectedDestination } = this.state;
+    const { tracingData, selectedDestination, isFloatingMenuOpen } = this.state;
     const { customDestinations } = tracingData;
 
     if (!customDestinations) return null;
@@ -344,10 +353,11 @@ class Tracing extends Component {
           selectedDestination !== destinationObj ? destinationObj : undefined,
         destinationSearchBarValue:
           selectedDestination !== destinationObj ? destinationObj.name : "",
+        isFloatingMenuOpen: false,
       });
     };
 
-    return customDestinations.map((destination, index) => {
+    const jsx = customDestinations.map((destination, index) => {
       const { name, type } = destination;
       const cls =
         selectedDestination && selectedDestination.type === type
@@ -355,15 +365,43 @@ class Tracing extends Component {
           : "";
 
       return (
-        <div
-          className={`icon ${cls}`}
+        <ChildButton
+          icon={
+            <div className={`icon ${cls}`}>
+              <img src={this.customDestinationIconMapping[type]} alt={name} />
+            </div>
+          }
           onClick={() => onDestinationClick(destination)}
           key={index}
-        >
-          <img src={this.customDestinationIconMapping[type]} alt={name} />
-        </div>
+        />
       );
     });
+
+    return (
+      <>
+        <FloatingMenu
+          slideSpeed={500}
+          direction={Directions.Up}
+          spacing={25}
+          isOpen={isFloatingMenuOpen}
+        >
+          <MainButton
+            iconResting={<MdAdd style={{ fill: "white" }} />}
+            iconActive={<MdClose style={{ fill: "white" }} />}
+            background="black"
+            onClick={() =>
+              this.setState({
+                isFloatingMenuOpen: !isFloatingMenuOpen,
+                selectedDestination: undefined,
+                destinationSearchBarValue: "",
+              })
+            }
+            size={56}
+          />
+          {jsx}
+        </FloatingMenu>
+      </>
+    );
   };
 
   getCustomAddressBarJSX = () => {
@@ -504,13 +542,13 @@ class Tracing extends Component {
 
         <div className="map-holder">{this.getMapJSX()}</div>
 
+        <div className="custom-destination-holder">
+          {this.getCustomDestinationsJSX()}
+        </div>
         <div className="footer-section">
           {this.getCustomAddressBarJSX()}
 
           <div className="bottom-row">
-            <div className="custom-destination-holder">
-              {this.getCustomDestinationsJSX()}
-            </div>
             <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
         </div>
