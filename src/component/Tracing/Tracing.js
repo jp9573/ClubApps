@@ -531,7 +531,6 @@ class Tracing extends Component {
             <DirectionsService
               options={{
                 destination: destination,
-                // routeTowards === "DESTINATION" ? destination : origin,
                 origin: currentGeoLocation,
                 travelMode: "DRIVING",
                 waypoints:
