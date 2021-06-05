@@ -73,6 +73,7 @@ class Tracing extends Component {
     response: null,
     isFloatingMenuOpen: false,
     showRoutingToast: false,
+    routeTowards: null,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -127,6 +128,7 @@ class Tracing extends Component {
               lat: res.data.currentGeoLocation.latitude,
               lng: res.data.currentGeoLocation.longitude,
             },
+            routeTowards: res.data.routeTowards,
             isLoading: false,
           },
           () => {
@@ -161,6 +163,7 @@ class Tracing extends Component {
           this.setState(
             {
               currentGeoLocation: newCurrentGeoLocation,
+              routeTowards: res.data.routeTowards,
             },
             this.loadETAData
           );
@@ -481,7 +484,8 @@ class Tracing extends Component {
   };
 
   getMapJSX = () => {
-    const { currentGeoLocation, sourceData, destinationData } = this.state;
+    const { currentGeoLocation, sourceData, destinationData, routeTowards } =
+      this.state;
 
     if (!currentGeoLocation || !sourceData || !destinationData) {
       return (
@@ -527,8 +531,17 @@ class Tracing extends Component {
             <DirectionsService
               options={{
                 destination: destination,
-                origin: origin,
+                // routeTowards === "DESTINATION" ? destination : origin,
+                origin: currentGeoLocation,
                 travelMode: "DRIVING",
+                waypoints:
+                  routeTowards === "SOURCE"
+                    ? [
+                        {
+                          location: origin,
+                        },
+                      ]
+                    : [],
               }}
               callback={directionsCallback}
             />
@@ -599,7 +612,6 @@ class Tracing extends Component {
           onClose={() => {
             this.setState({ showRoutingToast: false });
           }}
-          anchorOrigin={{ vertical: "center", horizontal: "center" }}
         >
           <Alert severity="success">Routing</Alert>
         </Snackbar>
