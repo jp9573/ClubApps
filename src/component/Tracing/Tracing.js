@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 import "./Tracing.scss";
 import qs from "query-string";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
@@ -9,6 +9,7 @@ import {
   getTracingPlaceApi,
   getTracingBusinessDetailApi,
   getVendorDetailApi,
+  updateDestinationApi,
 } from "../../common/Api";
 import logo from "../../asset/tracing/logo.svg";
 import uberIcon from "../../asset/tracing/uber.svg";
@@ -25,9 +26,30 @@ import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 import flightIcon from "../../asset/tracing/flight.svg";
 import dinnerIcon from "../../asset/tracing/dinner.svg";
 import bedIcon from "../../asset/tracing/bed.svg";
-import stethoscopeIcon from "../../asset/tracing/stethoscope.svg";
+import hospitalIcon from "../../asset/tracing/hospital.svg";
+import homeIcon from "../../asset/tracing/home.svg";
+import workIcon from "../../asset/tracing/suitcase.svg";
+import trainIcon from "../../asset/tracing/train.svg";
+import metroIcon from "../../asset/tracing/metro.svg";
+import busIcon from "../../asset/tracing/bus.svg";
+import {
+  GoogleMap,
+  LoadScript,
+  Marker,
+  DirectionsRenderer,
+  DirectionsService,
+} from "@react-google-maps/api";
 import movingCarIcon from "../../asset/tracing/movingCar.svg";
-import GoogleMapReact from "google-map-react";
+import MdAdd from "@material-ui/icons/Add";
+import MdClose from "@material-ui/icons/Clear";
+import {
+  FloatingMenu,
+  MainButton,
+  Directions,
+  ChildButton,
+} from "react-floating-button-menu";
+import Snackbar from "@material-ui/core/Snackbar";
+import { Alert } from "../AccountProfile/AccountProfile";
 
 class Tracing extends Component {
   state = {
@@ -35,19 +57,23 @@ class Tracing extends Component {
     trackerType: "",
     tracingData: {},
     currentGeoLocation: undefined,
-    tracingUpdateData: undefined,
     sourceData: undefined,
     destinationData: undefined,
     businessData: undefined,
     vendorData: undefined,
     isLoading: true,
-    isTracingUpdateDataLoading: true,
     isSourceDataLoading: true,
     isDestinationDataLoading: true,
     isBusinessDataLoading: true,
     isVendorDataLoading: true,
     selectedDestination: undefined,
     destinationSearchBarValue: "",
+    customDestinationResultData: undefined,
+    isCustomDestinationResultDataLoading: true,
+    response: null,
+    isFloatingMenuOpen: false,
+    showRoutingToast: false,
+    routeTowards: null,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -70,8 +96,13 @@ class Tracing extends Component {
   customDestinationIconMapping = {
     AIRPORT: flightIcon,
     RESTAURANT: dinnerIcon,
-    HOTEL: bedIcon,
-    HOSPITAL: stethoscopeIcon,
+    HOTELROOM: bedIcon,
+    HOSPITAL: hospitalIcon,
+    HOME: homeIcon,
+    WORK: workIcon,
+    TRAIN_STATION: trainIcon,
+    METRO_STATION: metroIcon,
+    BUS_STATION: busIcon,
   };
 
   componentDidMount() {
@@ -97,6 +128,7 @@ class Tracing extends Component {
               lat: res.data.currentGeoLocation.latitude,
               lng: res.data.currentGeoLocation.longitude,
             },
+            routeTowards: res.data.routeTowards,
             isLoading: false,
           },
           () => {
@@ -105,7 +137,7 @@ class Tracing extends Component {
             this.getBusinessData();
             this.getVendorData();
 
-            setInterval(this.getTrackingUpdateData, 15000);
+            setInterval(this.getTrackingUpdateData, 60 * 1000);
           }
         );
       })
@@ -116,25 +148,29 @@ class Tracing extends Component {
   };
 
   getTrackingUpdateData = () => {
-    const { idToken, tracingData } = this.state;
+    const { idToken, tracingData, currentGeoLocation } = this.state;
 
     getTracingUpdateApi(idToken, tracingData.id)
       .then((res) => {
-        this.setState(
-          {
-            tracingUpdateData: res.data,
-            currentGeoLocation: {
-              lat: res.data.currentGeoLocation.latitude,
-              lng: res.data.currentGeoLocation.longitude,
+        let newCurrentGeoLocation = {
+          lat: res.data.currentGeoLocation.latitude,
+          lng: res.data.currentGeoLocation.longitude,
+        };
+        if (
+          newCurrentGeoLocation.lat !== currentGeoLocation.lat &&
+          newCurrentGeoLocation.lng !== currentGeoLocation.lng
+        ) {
+          this.setState(
+            {
+              currentGeoLocation: newCurrentGeoLocation,
+              routeTowards: res.data.routeTowards,
             },
-            isTracingUpdateDataLoading: false,
-          },
-          this.loadETAData
-        );
+            this.loadETAData
+          );
+        }
       })
       .catch((err) => {
         console.error(err.message);
-        this.setState({ isTracingUpdateDataLoading: false });
       });
   };
 
@@ -213,28 +249,32 @@ class Tracing extends Component {
       lat: destinationData.geoLocation.latitude,
       lng: destinationData.geoLocation.longitude,
     };
-    new window.google.maps.DistanceMatrixService().getDistanceMatrix(
-      {
-        origins: [currentGeoLocation],
-        destinations: [destination],
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        unitSystem: window.google.maps.UnitSystem.IMPERIAL,
-        avoidHighways: false,
-        avoidTolls: false,
-      },
-      (response, status) => {
-        if (status !== "OK") {
-          console.error("Error was: " + status);
-        } else {
-          this.setState({
-            tracingData: {
-              ...this.state.tracingData,
-              arrivalInMinutes: response.rows[0].elements[0].duration.text,
-            },
-          });
+    try {
+      new window.google.maps.DistanceMatrixService().getDistanceMatrix(
+        {
+          origins: [currentGeoLocation],
+          destinations: [destination],
+          travelMode: window.google.maps.TravelMode.DRIVING,
+          unitSystem: window.google.maps.UnitSystem.IMPERIAL,
+          avoidHighways: false,
+          avoidTolls: false,
+        },
+        (response, status) => {
+          if (status !== "OK") {
+            console.error("Error was: " + status);
+          } else {
+            this.setState({
+              tracingData: {
+                ...this.state.tracingData,
+                arrivalInMinutes: response.rows[0].elements[0].duration.text,
+              },
+            });
+          }
         }
-      }
-    );
+      );
+    } catch (error) {
+      setTimeout(this.loadETAData, 1000);
+    }
   };
 
   getServiceDetailJSX = () => {
@@ -310,21 +350,43 @@ class Tracing extends Component {
   };
 
   getCustomDestinationsJSX = () => {
-    const { tracingData, selectedDestination } = this.state;
+    const { tracingData, selectedDestination, isFloatingMenuOpen } = this.state;
     const { customDestinations } = tracingData;
 
     if (!customDestinations) return null;
 
+    const loadCustomDestinationData = (obj) => {
+      const { idToken } = this.state;
+
+      getTracingPlaceApi(idToken, obj.id)
+        .then((res) => {
+          this.setState(
+            {
+              customDestinationResultData: res.data,
+              destinationSearchBarValue: res.data.name,
+              isCustomDestinationResultDataLoading: false,
+            },
+            this.loadETAData
+          );
+        })
+        .catch((err) => {
+          console.error(err.message);
+          this.setState({ isCustomDestinationResultDataLoading: false });
+        });
+    };
+
     const onDestinationClick = (destinationObj) => {
+      loadCustomDestinationData(destinationObj);
       this.setState({
         selectedDestination:
           selectedDestination !== destinationObj ? destinationObj : undefined,
         destinationSearchBarValue:
-          selectedDestination !== destinationObj ? destinationObj.name : "",
+          selectedDestination !== destinationObj ? "Fetching..." : "",
+        isFloatingMenuOpen: false,
       });
     };
 
-    return customDestinations.map((destination, index) => {
+    const jsx = customDestinations.map((destination, index) => {
       const { name, type } = destination;
       const cls =
         selectedDestination && selectedDestination.type === type
@@ -332,23 +394,67 @@ class Tracing extends Component {
           : "";
 
       return (
-        <div
-          className={`icon ${cls}`}
+        <ChildButton
+          icon={
+            <div className={`icon ${cls}`}>
+              <img src={this.customDestinationIconMapping[type]} alt={name} />
+            </div>
+          }
           onClick={() => onDestinationClick(destination)}
           key={index}
-        >
-          <img src={this.customDestinationIconMapping[type]} alt={name} />
-        </div>
+        />
       );
     });
+
+    return (
+      <>
+        <FloatingMenu
+          slideSpeed={500}
+          direction={Directions.Up}
+          spacing={25}
+          isOpen={isFloatingMenuOpen}
+        >
+          <MainButton
+            iconResting={<MdAdd style={{ fill: "white" }} />}
+            iconActive={<MdClose style={{ fill: "white" }} />}
+            background="black"
+            onClick={() =>
+              this.setState({
+                isFloatingMenuOpen: !isFloatingMenuOpen,
+                selectedDestination: undefined,
+                destinationSearchBarValue: "",
+              })
+            }
+            size={56}
+          />
+          {jsx}
+        </FloatingMenu>
+      </>
+    );
   };
 
   getCustomAddressBarJSX = () => {
     const { selectedDestination, destinationSearchBarValue } = this.state;
 
     if (!selectedDestination) return null;
+    const { type } = selectedDestination;
 
-    const onUpdateDestination = () => {};
+    const onUpdateDestination = () => {
+      const { idToken, selectedDestination } = this.state;
+      updateDestinationApi(idToken, selectedDestination)
+        .then((res) => {
+          this.setState({
+            destinationData: this.state.customDestinationResultData,
+            customDestinationResultData: undefined,
+            showRoutingToast: true,
+            selectedDestination: undefined,
+            destinationSearchBarValue: "",
+          });
+        })
+        .catch((err) => {
+          console.error(err.message);
+        });
+    };
 
     return (
       <div className="custom-address-bar">
@@ -362,9 +468,14 @@ class Tracing extends Component {
             this.setState({ destinationSearchBarValue: e.target.value })
           }
         />
+        <span className="label">{type}</span>
         <button
           className="btn btn-success go-button"
           onClick={onUpdateDestination}
+          disabled={
+            destinationSearchBarValue === "" ||
+            destinationSearchBarValue === "Fetching..."
+          }
         >
           GO
         </button>
@@ -373,9 +484,10 @@ class Tracing extends Component {
   };
 
   getMapJSX = () => {
-    const { currentGeoLocation } = this.state;
+    const { currentGeoLocation, sourceData, destinationData, routeTowards } =
+      this.state;
 
-    if (!currentGeoLocation) {
+    if (!currentGeoLocation || !sourceData || !destinationData) {
       return (
         <div className="d-flex align-items-center justify-content-center h-100">
           <CircularProgress />
@@ -383,28 +495,71 @@ class Tracing extends Component {
       );
     }
 
+    const origin = {
+      lat: sourceData.geoLocation.latitude,
+      lng: sourceData.geoLocation.longitude,
+    };
+    const destination = {
+      lat: destinationData.geoLocation.latitude,
+      lng: destinationData.geoLocation.longitude,
+    };
+
+    const directionsCallback = (response) => {
+      if (response !== null) {
+        if (response.status === "OK") {
+          this.setState(() => ({
+            response,
+          }));
+        } else {
+          console.log("response: ", response);
+        }
+      }
+    };
+
     return (
-      <GoogleMapReact
-        bootstrapURLKeys={{
-          key: process.env.REACT_APP_MAPS_API_KEY,
-          language: "en",
-        }}
-        defaultCenter={currentGeoLocation}
-        center={currentGeoLocation}
-        defaultZoom={15}
-      >
-        <img
-          src={movingCarIcon}
-          alt="Car"
-          lat={currentGeoLocation.lat}
-          lng={currentGeoLocation.lng}
-        />
-      </GoogleMapReact>
+      <LoadScript googleMapsApiKey={process.env.REACT_APP_MAPS_API_KEY}>
+        <GoogleMap
+          mapContainerStyle={{
+            width: "100%",
+            height: "100%",
+          }}
+          center={currentGeoLocation}
+          zoom={10}
+        >
+          <Marker position={currentGeoLocation} icon={movingCarIcon} />
+          {destination !== "" && origin !== "" && (
+            <DirectionsService
+              options={{
+                destination: destination,
+                origin: currentGeoLocation,
+                travelMode: "DRIVING",
+                waypoints:
+                  routeTowards === "SOURCE"
+                    ? [
+                        {
+                          location: origin,
+                        },
+                      ]
+                    : [],
+              }}
+              callback={directionsCallback}
+            />
+          )}
+
+          {this.state.response !== null && (
+            <DirectionsRenderer
+              options={{
+                directions: this.state.response,
+              }}
+            />
+          )}
+        </GoogleMap>
+      </LoadScript>
     );
   };
 
   render() {
-    const { idToken, trackerType, isLoading } = this.state;
+    const { idToken, trackerType, isLoading, showRoutingToast } = this.state;
 
     if (
       !idToken ||
@@ -439,21 +594,26 @@ class Tracing extends Component {
 
         <div className="map-holder">{this.getMapJSX()}</div>
 
+        <div className="custom-destination-holder">
+          {this.getCustomDestinationsJSX()}
+        </div>
         <div className="footer-section">
           {this.getCustomAddressBarJSX()}
 
           <div className="bottom-row">
-            <div className="custom-destination-holder">
-              {this.getCustomDestinationsJSX()}
-            </div>
             <div className="status-holder">{this.getStatusJSX()}</div>
           </div>
         </div>
 
-        {/* <script
-          src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=&v=weekly"
-          async
-        ></script> */}
+        <Snackbar
+          open={showRoutingToast}
+          autoHideDuration={2000}
+          onClose={() => {
+            this.setState({ showRoutingToast: false });
+          }}
+        >
+          <Alert severity="success">Routing</Alert>
+        </Snackbar>
       </div>
     );
   }

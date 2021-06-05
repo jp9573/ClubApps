@@ -120,3 +120,11 @@ export function getVendorDetailApi(token, id) {
     },
   });
 }
+
+export function updateDestinationApi(token, data) {
+  return axiosInstance.post(`/UpdateDestination`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
