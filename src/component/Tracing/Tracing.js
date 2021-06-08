@@ -1,4 +1,4 @@
-import React, { Component, PureComponent } from "react";
+import React, { Component } from "react";
 import "./Tracing.scss";
 import qs from "query-string";
 import pageExpiredImage from "../../asset/image/pageExpired.svg";
@@ -71,6 +71,7 @@ class Tracing extends Component {
     selectedDestination: undefined,
     destinationSearchBarValue: "",
     customDestinationResultData: undefined,
+    allCustomDestinationResultData: {},
     isCustomDestinationResultDataLoading: true,
     response: null,
     isFloatingMenuOpen: false,
@@ -139,6 +140,7 @@ class Tracing extends Component {
             this.getSourceData();
             this.getBusinessData();
             this.getVendorData();
+            this.getCustomDestinationData();
 
             setInterval(this.getTrackingUpdateData, 60 * 1000);
           }
@@ -242,6 +244,34 @@ class Tracing extends Component {
         console.error(err.message);
         this.setState({ isVendorDataLoading: false });
       });
+  };
+
+  getCustomDestinationData = () => {
+    const { idToken, tracingData } = this.state;
+    const { customDestinations } = tracingData;
+
+    if (!customDestinations) {
+      this.setState({ isCustomDestinationResultDataLoading: false });
+      return null;
+    }
+
+    customDestinations.map((destination) => {
+      getTracingPlaceApi(idToken, destination.id)
+        .then((res) => {
+          this.setState({
+            allCustomDestinationResultData: {
+              ...this.state.allCustomDestinationResultData,
+              [destination.id]: res.data,
+            },
+            isCustomDestinationResultDataLoading: false,
+          });
+        })
+        .catch((err) => {
+          console.error(err.message);
+          this.setState({ isCustomDestinationResultDataLoading: false });
+        });
+      return null;
+    });
   };
 
   loadETAData = () => {
@@ -353,39 +383,29 @@ class Tracing extends Component {
   };
 
   getCustomDestinationsJSX = () => {
-    const { tracingData, selectedDestination, isFloatingMenuOpen } = this.state;
+    const {
+      tracingData,
+      selectedDestination,
+      isFloatingMenuOpen,
+      isCustomDestinationResultDataLoading,
+    } = this.state;
     const { customDestinations } = tracingData;
 
-    if (!customDestinations) return null;
-
-    const loadCustomDestinationData = (obj) => {
-      const { idToken } = this.state;
-
-      getTracingPlaceApi(idToken, obj.id)
-        .then((res) => {
-          this.setState(
-            {
-              customDestinationResultData: res.data,
-              destinationSearchBarValue: res.data.name,
-              isCustomDestinationResultDataLoading: false,
-            },
-            this.loadETAData
-          );
-        })
-        .catch((err) => {
-          console.error(err.message);
-          this.setState({ isCustomDestinationResultDataLoading: false });
-        });
-    };
+    if (!customDestinations || isCustomDestinationResultDataLoading)
+      return null;
 
     const onDestinationClick = (destinationObj) => {
-      loadCustomDestinationData(destinationObj);
+      const { allCustomDestinationResultData } = this.state;
       this.setState({
         selectedDestination:
           selectedDestination !== destinationObj ? destinationObj : undefined,
         destinationSearchBarValue:
-          selectedDestination !== destinationObj ? "Fetching..." : "",
+          selectedDestination !== destinationObj
+            ? allCustomDestinationResultData[destinationObj.id].name
+            : "",
         isFloatingMenuOpen: false,
+        customDestinationResultData:
+          allCustomDestinationResultData[destinationObj.id],
       });
     };
 
