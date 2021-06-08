@@ -32,6 +32,8 @@ import workIcon from "../../asset/tracing/suitcase.svg";
 import trainIcon from "../../asset/tracing/train.svg";
 import metroIcon from "../../asset/tracing/metro.svg";
 import busIcon from "../../asset/tracing/bus.svg";
+import redPinIcon from "../../asset/tracing/red-pin.png";
+import blackPinIcon from "../../asset/tracing/black-pin.png";
 import {
   GoogleMap,
   LoadScript,
@@ -484,7 +486,7 @@ class Tracing extends Component {
   };
 
   getMapJSX = () => {
-    const { currentGeoLocation, sourceData, destinationData, routeTowards } =
+    const { currentGeoLocation, sourceData, destinationData, response } =
       this.state;
 
     if (!currentGeoLocation || !sourceData || !destinationData) {
@@ -494,6 +496,7 @@ class Tracing extends Component {
         </div>
       );
     }
+    const leg = response ? response.routes[0].legs[0] : null;
 
     const origin = {
       lat: sourceData.geoLocation.latitude,
@@ -531,27 +534,32 @@ class Tracing extends Component {
             <DirectionsService
               options={{
                 destination: destination,
-                origin: currentGeoLocation,
+                origin: origin,
                 travelMode: "DRIVING",
-                waypoints:
-                  routeTowards === "SOURCE"
-                    ? [
-                        {
-                          location: origin,
-                        },
-                      ]
-                    : [],
+                //   waypoints:
+                //     routeTowards === "SOURCE"
+                //       ? [
+                //           {
+                //             location: origin,
+                //           },
+                //         ]
+                //       : [],
               }}
               callback={directionsCallback}
             />
           )}
 
           {this.state.response !== null && (
-            <DirectionsRenderer
-              options={{
-                directions: this.state.response,
-              }}
-            />
+            <>
+              <DirectionsRenderer
+                options={{
+                  directions: this.state.response,
+                  suppressMarkers: true,
+                }}
+              />
+              <Marker position={leg.start_location} icon={blackPinIcon} />
+              <Marker position={leg.end_location} icon={redPinIcon} />
+            </>
           )}
         </GoogleMap>
       </LoadScript>
