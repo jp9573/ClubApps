@@ -76,6 +76,7 @@ class Tracing extends Component {
     isFloatingMenuOpen: false,
     showRoutingToast: false,
     routeTowards: null,
+    customDestinationInputReadOnly: true,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -439,7 +440,8 @@ class Tracing extends Component {
     const { selectedDestination, destinationSearchBarValue } = this.state;
 
     if (!selectedDestination) return null;
-    const { type } = selectedDestination;
+    let { type } = selectedDestination;
+    type = type.split("_").join(" ");
 
     const onUpdateDestination = () => {
       const { idToken, selectedDestination } = this.state;
@@ -468,6 +470,13 @@ class Tracing extends Component {
           value={destinationSearchBarValue}
           onChange={(e) =>
             this.setState({ destinationSearchBarValue: e.target.value })
+          }
+          readOnly={this.state.customDestinationInputReadOnly}
+          onFocus={(e) =>
+            this.setState({ customDestinationInputReadOnly: false })
+          }
+          onBlur={(e) =>
+            this.setState({ customDestinationInputReadOnly: true })
           }
         />
         <span className="label">{type}</span>
