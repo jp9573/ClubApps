@@ -661,6 +661,14 @@ class Tracing extends Component {
 
         <div className="custom-destination-holder">
           {this.getCustomDestinationsJSX()}
+          {this.state.tracingData.customDestinations &&
+          !this.state.isCustomDestinationResultDataLoading ? (
+            <span className="label-text">
+              Change
+              <br />
+              Destination
+            </span>
+          ) : null}
         </div>
         <div className="footer-section">
           {this.getCustomAddressBarJSX()}
