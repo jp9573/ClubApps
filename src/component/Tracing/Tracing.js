@@ -141,7 +141,6 @@ class Tracing extends Component {
             this.getBusinessData();
             this.getVendorData();
             this.getCustomDestinationData();
-
             setInterval(this.getTrackingUpdateData, 60 * 1000);
           }
         );
@@ -327,37 +326,62 @@ class Tracing extends Component {
           <div className="d-flex align-items-center">
             <img src={this.detailIconMapping[trackerType]} alt="Detail" />
             <span className="vehicle-no">
-              {vehicleNumber ? vehicleNumber : "Fetching..."}
+              {vehicleNumber ? (
+                vehicleNumber
+              ) : (
+                <CircularProgress color="white" size={25} />
+              )}
             </span>
           </div>
           <div className="otp">
-            OTP <b>{verificationCode ? verificationCode : "Fetching..."}</b>
+            OTP{" "}
+            <b>
+              {verificationCode ? (
+                verificationCode
+              ) : (
+                <CircularProgress color="white" size={25} />
+              )}
+            </b>
           </div>
         </div>
         <div className="service-details">
           <div className="location-content">
             <div className="first-row">
-              <RadioButtonUncheckedIcon />{" "}
-              <span>{sourceData ? sourceData.name : "Fetching..."}</span>
+              <RadioButtonUncheckedIcon className="loc-icon" />{" "}
+              <span>
+                {sourceData ? (
+                  sourceData.name
+                ) : (
+                  <CircularProgress color="white" size={25} />
+                )}
+              </span>
             </div>
             <div className="dot"></div>
             <div className="dot"></div>
             <div className="dot"></div>
             <div className="last-row">
-              <RoomIcon />{" "}
+              <RoomIcon className="loc-icon" />{" "}
               <span>
-                {destinationData
-                  ? destinationData.name
-                    ? destinationData.name
-                    : "Current Location"
-                  : "Fetching..."}
+                {destinationData ? (
+                  destinationData.name ? (
+                    destinationData.name
+                  ) : (
+                    "Current Location"
+                  )
+                ) : (
+                  <CircularProgress color="white" size={25} />
+                )}
               </span>
             </div>
           </div>
           <div className="agent-content">
             <img src={userIcon} alt="User" />
             <span className="name">
-              {givenName ? givenName : "Fetching..."}
+              {givenName ? (
+                givenName
+              ) : (
+                <CircularProgress color="white" size={25} />
+              )}
             </span>
           </div>
         </div>
@@ -375,7 +399,11 @@ class Tracing extends Component {
       <>
         <span className="label">ARRIVING IN</span>
         <span className="arrival-time">
-          {arrivalInMinutes ? arrivalInMinutes : "Fetching..."}
+          {arrivalInMinutes ? (
+            arrivalInMinutes
+          ) : (
+            <CircularProgress color="white" size={25} />
+          )}
         </span>
         <span className="status-label">{arrivalStatus}</span>
       </>
