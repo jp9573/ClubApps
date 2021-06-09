@@ -101,6 +101,9 @@ class Tracing extends Component {
     METRO_STATION: metroIcon,
     BUS_STATION: busIcon,
   };
+  directionsService = null;
+  directionsRenderer = null;
+  markers = [];
 
   componentDidMount() {
     const queryObj = qs.parse(this.props.location.search);
@@ -488,13 +491,16 @@ class Tracing extends Component {
       const { idToken, selectedDestination } = this.state;
       updateDestinationApi(idToken, selectedDestination)
         .then((res) => {
-          this.setState({
-            destinationData: this.state.customDestinationResultData,
-            customDestinationResultData: undefined,
-            showRoutingToast: true,
-            selectedDestination: undefined,
-            destinationSearchBarValue: "",
-          });
+          this.setState(
+            {
+              destinationData: this.state.customDestinationResultData,
+              customDestinationResultData: undefined,
+              showRoutingToast: true,
+              selectedDestination: undefined,
+              destinationSearchBarValue: "",
+            },
+            this.renderDirection
+          );
         })
         .catch((err) => {
           console.error(err.message);
@@ -535,46 +541,31 @@ class Tracing extends Component {
     );
   };
 
-  getMapJSX = () => {
-    const { currentGeoLocation, sourceData, destinationData } = this.state;
+  renderDirection = () => {
+    const { map } = this.state;
 
-    if (!currentGeoLocation || !sourceData || !destinationData) {
-      return (
-        <div className="d-flex align-items-center justify-content-center h-100">
-          <CircularProgress />
-        </div>
-      );
+    if (this.directionsService === null) {
+      this.directionsService = new window.google.maps.DirectionsService();
+    }
+    if (this.directionsRenderer === null) {
+      this.directionsRenderer = new window.google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+        map: map,
+      });
     }
 
-    const origin = {
-      lat: sourceData.geoLocation.latitude,
-      lng: sourceData.geoLocation.longitude,
-    };
-    const destination = {
-      lat: destinationData.geoLocation.latitude,
-      lng: destinationData.geoLocation.longitude,
-    };
+    for (let i = 0; i < this.markers.length; i++) {
+      this.markers[i].setMap(null);
+    }
 
-    const renderDirection = (map, maps) => {
-      const directionsRenderer = new window.google.maps.DirectionsRenderer({
-        suppressMarkers: true,
-      });
-      const directionsService = new window.google.maps.DirectionsService();
-      directionsRenderer.setMap(map);
-      calculateAndDisplayRoute(directionsService, directionsRenderer, map);
-    };
-
-    const calculateAndDisplayRoute = (
-      directionsService,
-      directionsRenderer,
-      map
-    ) => {
-      const makeMarker = (position, icon, map) => {
-        new window.google.maps.Marker({
+    const calculateAndDisplayRoute = () => {
+      const makeMarker = (position, icon) => {
+        const marker = new window.google.maps.Marker({
           position: position,
           map: map,
           icon: icon,
         });
+        this.markers.push(marker);
       };
 
       const icons = {
@@ -599,8 +590,18 @@ class Tracing extends Component {
           new window.google.maps.Point(13, 22)
         ),
       };
+      const { sourceData, destinationData } = this.state;
 
-      directionsService.route(
+      const origin = {
+        lat: sourceData.geoLocation.latitude,
+        lng: sourceData.geoLocation.longitude,
+      };
+      const destination = {
+        lat: destinationData.geoLocation.latitude,
+        lng: destinationData.geoLocation.longitude,
+      };
+
+      this.directionsService.route(
         {
           origin: origin,
           destination: destination,
@@ -608,16 +609,30 @@ class Tracing extends Component {
         },
         (response, status) => {
           if (status === "OK") {
-            directionsRenderer.setDirections(response);
+            this.directionsRenderer.setDirections(response);
             let leg = response.routes[0].legs[0];
-            makeMarker(leg.start_location, icons.start, map);
-            makeMarker(leg.end_location, icons.end, map);
+            makeMarker(leg.start_location, icons.start);
+            makeMarker(leg.end_location, icons.end);
           } else {
             window.alert("Directions request failed due to " + status);
           }
         }
       );
     };
+
+    calculateAndDisplayRoute();
+  };
+
+  getMapJSX = () => {
+    const { currentGeoLocation, sourceData, destinationData } = this.state;
+
+    if (!currentGeoLocation || !sourceData || !destinationData) {
+      return (
+        <div className="d-flex align-items-center justify-content-center h-100">
+          <CircularProgress />
+        </div>
+      );
+    }
 
     return (
       <GoogleMap
@@ -626,7 +641,9 @@ class Tracing extends Component {
         defaultCenter={currentGeoLocation}
         center={currentGeoLocation}
         defaultZoom={15}
-        onGoogleApiLoaded={({ map, maps }) => renderDirection(map, maps)}
+        onGoogleApiLoaded={({ map, maps }) => {
+          this.setState({ map }, this.renderDirection);
+        }}
       >
         <img
           src={movingCarIcon}
