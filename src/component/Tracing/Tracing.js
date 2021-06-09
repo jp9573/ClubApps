@@ -34,13 +34,6 @@ import metroIcon from "../../asset/tracing/metro.svg";
 import busIcon from "../../asset/tracing/bus.svg";
 import redPinIcon from "../../asset/tracing/red-pin.png";
 import blackPinIcon from "../../asset/tracing/black-pin.png";
-import {
-  GoogleMap,
-  LoadScript,
-  Marker,
-  DirectionsRenderer,
-  DirectionsService,
-} from "@react-google-maps/api";
 import movingCarIcon from "../../asset/tracing/movingCar.svg";
 import MdAdd from "@material-ui/icons/Add";
 import MdClose from "@material-ui/icons/Clear";
@@ -52,6 +45,7 @@ import {
 } from "react-floating-button-menu";
 import Snackbar from "@material-ui/core/Snackbar";
 import { Alert } from "../AccountProfile/AccountProfile";
+import GoogleMap from "google-map-react";
 
 class Tracing extends Component {
   state = {
@@ -73,7 +67,6 @@ class Tracing extends Component {
     customDestinationResultData: undefined,
     allCustomDestinationResultData: {},
     isCustomDestinationResultDataLoading: true,
-    response: null,
     isFloatingMenuOpen: false,
     showRoutingToast: false,
     routeTowards: null,
@@ -543,8 +536,7 @@ class Tracing extends Component {
   };
 
   getMapJSX = () => {
-    const { currentGeoLocation, sourceData, destinationData, response } =
-      this.state;
+    const { currentGeoLocation, sourceData, destinationData } = this.state;
 
     if (!currentGeoLocation || !sourceData || !destinationData) {
       return (
@@ -553,7 +545,6 @@ class Tracing extends Component {
         </div>
       );
     }
-    const leg = response ? response.routes[0].legs[0] : null;
 
     const origin = {
       lat: sourceData.geoLocation.latitude,
@@ -564,62 +555,86 @@ class Tracing extends Component {
       lng: destinationData.geoLocation.longitude,
     };
 
-    const directionsCallback = (response) => {
-      if (response !== null) {
-        if (response.status === "OK") {
-          this.setState(() => ({
-            response,
-          }));
-        } else {
-          console.log("response: ", response);
+    const renderDirection = (map, maps) => {
+      const directionsRenderer = new window.google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+      });
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsRenderer.setMap(map);
+      calculateAndDisplayRoute(directionsService, directionsRenderer, map);
+    };
+
+    const calculateAndDisplayRoute = (
+      directionsService,
+      directionsRenderer,
+      map
+    ) => {
+      const makeMarker = (position, icon, map) => {
+        new window.google.maps.Marker({
+          position: position,
+          map: map,
+          icon: icon,
+        });
+      };
+
+      const icons = {
+        start: new window.google.maps.MarkerImage(
+          // icon
+          blackPinIcon,
+          // (width,height)
+          new window.google.maps.Size(44, 32),
+          // The origin point (x,y)
+          new window.google.maps.Point(0, 0),
+          // The anchor point (x,y)
+          new window.google.maps.Point(13, 22)
+        ),
+        end: new window.google.maps.MarkerImage(
+          // icon
+          redPinIcon,
+          // (width,height)
+          new window.google.maps.Size(44, 32),
+          // The origin point (x,y)
+          new window.google.maps.Point(0, 0),
+          // The anchor point (x,y)
+          new window.google.maps.Point(13, 22)
+        ),
+      };
+
+      directionsService.route(
+        {
+          origin: origin,
+          destination: destination,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (response, status) => {
+          if (status === "OK") {
+            directionsRenderer.setDirections(response);
+            let leg = response.routes[0].legs[0];
+            makeMarker(leg.start_location, icons.start, map);
+            makeMarker(leg.end_location, icons.end, map);
+          } else {
+            window.alert("Directions request failed due to " + status);
+          }
         }
-      }
+      );
     };
 
     return (
-      <LoadScript googleMapsApiKey={process.env.REACT_APP_MAPS_API_KEY}>
-        <GoogleMap
-          mapContainerStyle={{
-            width: "100%",
-            height: "100%",
-          }}
-          center={currentGeoLocation}
-          zoom={10}
-        >
-          <Marker position={currentGeoLocation} icon={movingCarIcon} />
-          {destination !== "" && origin !== "" && (
-            <DirectionsService
-              options={{
-                destination: destination,
-                origin: origin,
-                travelMode: "DRIVING",
-                //   waypoints:
-                //     routeTowards === "SOURCE"
-                //       ? [
-                //           {
-                //             location: origin,
-                //           },
-                //         ]
-                //       : [],
-              }}
-              callback={directionsCallback}
-            />
-          )}
-
-          {this.state.response !== null && (
-            <>
-              <DirectionsRenderer
-                options={{
-                  directions: this.state.response,
-                  suppressMarkers: true,
-                }}
-              />
-              <Marker position={leg.start_location} icon={blackPinIcon} />
-              <Marker position={leg.end_location} icon={redPinIcon} />
-            </>
-          )}
-        </GoogleMap>
-      </LoadScript>
+      <GoogleMap
+        bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_API_KEY }}
+        yesIWantToUseGoogleMapApiInternals
+        defaultCenter={currentGeoLocation}
+        center={currentGeoLocation}
+        defaultZoom={15}
+        onGoogleApiLoaded={({ map, maps }) => renderDirection(map, maps)}
+      >
+        <img
+          src={movingCarIcon}
+          alt="Car"
+          lat={currentGeoLocation.lat}
+          lng={currentGeoLocation.lng}
+        />
+      </GoogleMap>
     );
   };
 
