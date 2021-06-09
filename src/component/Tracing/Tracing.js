@@ -156,18 +156,13 @@ class Tracing extends Component {
           lat: res.data.currentGeoLocation.latitude,
           lng: res.data.currentGeoLocation.longitude,
         };
-        if (
-          newCurrentGeoLocation.lat !== currentGeoLocation.lat &&
-          newCurrentGeoLocation.lng !== currentGeoLocation.lng
-        ) {
-          this.setState(
-            {
-              currentGeoLocation: newCurrentGeoLocation,
-              routeTowards: res.data.routeTowards,
-            },
-            this.loadETAData
-          );
-        }
+        this.setState(
+          {
+            currentGeoLocation: newCurrentGeoLocation,
+            routeTowards: res.data.routeTowards,
+          },
+          this.loadETAData
+        );
       })
       .catch((err) => {
         console.error(err.message);
