@@ -46,6 +46,7 @@ import {
 import Snackbar from "@material-ui/core/Snackbar";
 import { Alert } from "../AccountProfile/AccountProfile";
 import GoogleMap from "google-map-react";
+import PageVisibility from "react-page-visibility";
 
 class Tracing extends Component {
   state = {
@@ -71,6 +72,7 @@ class Tracing extends Component {
     showRoutingToast: false,
     routeTowards: null,
     customDestinationInputReadOnly: true,
+    isTabActive: true,
   };
   typeMapping = {
     cab: "CAB_TRACKER",
@@ -148,7 +150,10 @@ class Tracing extends Component {
   };
 
   getTrackingUpdateData = () => {
-    const { idToken, tracingData, currentGeoLocation } = this.state;
+    const { idToken, tracingData, currentGeoLocation, isTabActive } =
+      this.state;
+
+    if (!isTabActive) return;
 
     getTracingUpdateApi(idToken, tracingData.id)
       .then((res) => {
@@ -662,6 +667,10 @@ class Tracing extends Component {
     );
   };
 
+  handleVisibilityChange = (isVisible) => {
+    this.setState({ isTabActive: isVisible });
+  };
+
   render() {
     const { idToken, trackerType, isLoading, showRoutingToast, businessData } =
       this.state;
@@ -689,47 +698,49 @@ class Tracing extends Component {
     }
 
     return (
-      <div className="tracing-container">
-        <div className="top-row">
-          <img src={logo} alt="Logo" />
-          {businessData && businessData.brandLogo && (
-            <img src={businessData.brandLogo} alt="Brand logo" />
-          )}
-        </div>
-
-        <div className="detail-row">{this.getServiceDetailJSX()}</div>
-
-        <div className="map-holder">{this.getMapJSX()}</div>
-
-        <div className="custom-destination-holder">
-          {this.getCustomDestinationsJSX()}
-          {this.state.tracingData.customDestinations &&
-          !this.state.isCustomDestinationResultDataLoading ? (
-            <span className="label-text">
-              Change
-              <br />
-              Destination
-            </span>
-          ) : null}
-        </div>
-        <div className="footer-section">
-          {this.getCustomAddressBarJSX()}
-
-          <div className="bottom-row">
-            <div className="status-holder">{this.getStatusJSX()}</div>
+      <PageVisibility onChange={this.handleVisibilityChange}>
+        <div className="tracing-container">
+          <div className="top-row">
+            <img src={logo} alt="Logo" />
+            {businessData && businessData.brandLogo && (
+              <img src={businessData.brandLogo} alt="Brand logo" />
+            )}
           </div>
-        </div>
 
-        <Snackbar
-          open={showRoutingToast}
-          autoHideDuration={2000}
-          onClose={() => {
-            this.setState({ showRoutingToast: false });
-          }}
-        >
-          <Alert severity="success">Routing</Alert>
-        </Snackbar>
-      </div>
+          <div className="detail-row">{this.getServiceDetailJSX()}</div>
+
+          <div className="map-holder">{this.getMapJSX()}</div>
+
+          <div className="custom-destination-holder">
+            {this.getCustomDestinationsJSX()}
+            {this.state.tracingData.customDestinations &&
+            !this.state.isCustomDestinationResultDataLoading ? (
+              <span className="label-text">
+                Change
+                <br />
+                Destination
+              </span>
+            ) : null}
+          </div>
+          <div className="footer-section">
+            {this.getCustomAddressBarJSX()}
+
+            <div className="bottom-row">
+              <div className="status-holder">{this.getStatusJSX()}</div>
+            </div>
+          </div>
+
+          <Snackbar
+            open={showRoutingToast}
+            autoHideDuration={2000}
+            onClose={() => {
+              this.setState({ showRoutingToast: false });
+            }}
+          >
+            <Alert severity="success">Routing</Alert>
+          </Snackbar>
+        </div>
+      </PageVisibility>
     );
   }
 }
