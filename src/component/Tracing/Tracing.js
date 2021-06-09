@@ -320,7 +320,9 @@ class Tracing extends Component {
               {vehicleNumber ? (
                 vehicleNumber
               ) : (
-                <CircularProgress color="white" size={25} />
+                <div className="loading">
+                  <Loading />
+                </div>
               )}
             </span>
           </div>
@@ -330,7 +332,9 @@ class Tracing extends Component {
               {verificationCode ? (
                 verificationCode
               ) : (
-                <CircularProgress color="white" size={25} />
+                <div className="loading">
+                  <Loading />
+                </div>
               )}
             </b>
           </div>
@@ -343,7 +347,9 @@ class Tracing extends Component {
                 {sourceData ? (
                   sourceData.name
                 ) : (
-                  <CircularProgress color="white" size={25} />
+                  <div className="loading">
+                    <Loading />
+                  </div>
                 )}
               </span>
             </div>
@@ -360,7 +366,9 @@ class Tracing extends Component {
                     "Current Location"
                   )
                 ) : (
-                  <CircularProgress color="white" size={25} />
+                  <div className="loading">
+                    <Loading />
+                  </div>
                 )}
               </span>
             </div>
@@ -371,7 +379,9 @@ class Tracing extends Component {
               {givenName ? (
                 givenName
               ) : (
-                <CircularProgress color="white" size={25} />
+                <div className="loading">
+                  <Loading />
+                </div>
               )}
             </span>
           </div>
@@ -393,7 +403,9 @@ class Tracing extends Component {
           {arrivalInMinutes ? (
             arrivalInMinutes
           ) : (
-            <CircularProgress color="white" size={25} />
+            <div className="loading">
+              <Loading />
+            </div>
           )}
         </span>
         <span className="status-label">{arrivalStatus}</span>
@@ -651,7 +663,8 @@ class Tracing extends Component {
   };
 
   render() {
-    const { idToken, trackerType, isLoading, showRoutingToast } = this.state;
+    const { idToken, trackerType, isLoading, showRoutingToast, businessData } =
+      this.state;
 
     if (
       !idToken ||
@@ -679,7 +692,9 @@ class Tracing extends Component {
       <div className="tracing-container">
         <div className="top-row">
           <img src={logo} alt="Logo" />
-          <img src={this.secondaryLogoMapping[trackerType]} alt="Brand logo" />
+          {businessData && businessData.brandLogo && (
+            <img src={businessData.brandLogo} alt="Brand logo" />
+          )}
         </div>
 
         <div className="detail-row">{this.getServiceDetailJSX()}</div>
@@ -718,5 +733,38 @@ class Tracing extends Component {
     );
   }
 }
+
+const Loading = () => {
+  return (
+    <svg
+      id="dots"
+      width="50px"
+      height="18px"
+      viewBox="0 0 132 58"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xlink="http://www.w3.org/1999/xlink"
+      sketch="http://www.bohemiancoding.com/sketch/ns"
+    >
+      <title>dots</title>
+      <desc>Created with Sketch.</desc>
+      <defs></defs>
+      <g
+        id="Page-1"
+        stroke="none"
+        stroke-width="1"
+        fill="none"
+        fill-rule="evenodd"
+        type="MSPage"
+      >
+        <g id="dots" type="MSArtboardGroup" fill="#A3A3A3">
+          <circle id="dot1" type="MSShapeGroup" cx="25" cy="30" r="5"></circle>
+          <circle id="dot2" type="MSShapeGroup" cx="65" cy="30" r="5"></circle>
+          <circle id="dot3" type="MSShapeGroup" cx="105" cy="30" r="5"></circle>
+        </g>
+      </g>
+    </svg>
+  );
+};
 
 export default Tracing;
