@@ -57,7 +57,7 @@
           margin-top: 3px;
         }
 
-        svg {
+        .loc-icon {
           width: 15px;
           height: 15px;
         }
@@ -107,13 +107,30 @@
     display: flex;
     z-index: 1;
     width: fit-content;
+    display: flex;
+    align-items: flex-end;
+
+    .label-text {
+      font-size: 14px;
+      margin: 0.6rem;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border-radius: 8px;
+      padding: 0 0.3rem;
+    }
+
+    .gQIfBy {
+      display: none;
+      transition-duration: 0.5s;
+      transition-delay: 0.5s;
+    }
 
     .icon {
       background: black;
       padding: 12px;
       border-radius: 50%;
       box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-      margin-right: 8px;
       flex-shrink: 0;
 
       &.active {
@@ -131,7 +148,6 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    left: 20px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -149,11 +165,11 @@
       .label {
         font-size: 9px;
         letter-spacing: 0.6px;
-        margin-left: 0.2rem;
-        align-self: flex-start;
-        margin-top: 0.15rem;
+        margin-left: 0.4rem;
+        margin-top: 0.2rem;
         position: absolute;
         left: 2px;
+        top: 1px;
       }
 
       svg {
@@ -167,6 +183,10 @@
         border: none;
         color: white;
         box-shadow: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        word-wrap: normal;
 
         &::-webkit-input-placeholder {
           /* WebKit, Blink, Edge */
@@ -250,6 +270,36 @@
 
     & > div {
       background: #000000ae;
+    }
+  }
+
+  .loading {
+    display: inline-block;
+
+    #dots #dot1 {
+      animation: load 1s infinite;
+    }
+
+    #dots #dot2 {
+      animation: load 1s infinite;
+      animation-delay: 0.2s;
+    }
+
+    #dots #dot3 {
+      animation: load 1s infinite;
+      animation-delay: 0.4s;
+    }
+
+    @keyframes load {
+      0% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
     }
   }
 }
