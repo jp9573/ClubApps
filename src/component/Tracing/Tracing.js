@@ -71,6 +71,7 @@ class Tracing extends Component {
     isFloatingMenuOpen: false,
     showRoutingToast: false,
     routeTowards: null,
+    arrivalStatus: null,
     customDestinationInputReadOnly: true,
     isTabActive: true,
   };
@@ -106,6 +107,7 @@ class Tracing extends Component {
   directionsService = null;
   directionsRenderer = null;
   markers = [];
+  timer = null;
 
   componentDidMount() {
     const queryObj = qs.parse(this.props.location.search);
@@ -131,6 +133,7 @@ class Tracing extends Component {
               lng: res.data.currentGeoLocation.longitude,
             },
             routeTowards: res.data.routeTowards,
+            arrivalStatus: res.data.arrivalStatus,
             isLoading: false,
           },
           () => {
@@ -139,7 +142,7 @@ class Tracing extends Component {
             this.getBusinessData();
             this.getVendorData();
             this.getCustomDestinationData();
-            setInterval(this.getTrackingUpdateData, 60 * 1000);
+            this.timer = setInterval(this.getTrackingUpdateData, 60 * 1000);
           }
         );
       })
@@ -150,13 +153,15 @@ class Tracing extends Component {
   };
 
   getTrackingUpdateData = () => {
-    const { idToken, tracingData, currentGeoLocation, isTabActive } =
-      this.state;
+    const { idToken, tracingData, isTabActive } = this.state;
 
     if (!isTabActive) return;
 
     getTracingUpdateApi(idToken, tracingData.id)
       .then((res) => {
+        if (res.data.arrivalStatus === "ARRIVED AT DESTINATION") {
+          clearInterval(this.timer);
+        }
         let newCurrentGeoLocation = {
           lat: res.data.currentGeoLocation.latitude,
           lng: res.data.currentGeoLocation.longitude,
@@ -165,6 +170,7 @@ class Tracing extends Component {
           {
             currentGeoLocation: newCurrentGeoLocation,
             routeTowards: res.data.routeTowards,
+            arrivalStatus: res.data.arrivalStatus,
           },
           this.loadETAData
         );
@@ -312,6 +318,7 @@ class Tracing extends Component {
       vendorData,
       sourceData,
       destinationData,
+      arrivalStatus,
     } = this.state;
     const { verificationCode } = tracingData;
     const { givenName, vehicleNumber } = vendorData || {};
@@ -391,15 +398,30 @@ class Tracing extends Component {
             </span>
           </div>
         </div>
+        {arrivalStatus === "ARRIVED AT SOURCE" ? (
+          <span className="status">
+            {trackerType === "CAB_TRACKER"
+              ? "Your driver has arrived and is Waiting for you."
+              : "Your delivery driver is picking up your order at Restaurant"}
+          </span>
+        ) : arrivalStatus === "ARRIVED AT DESTINATION" ? (
+          <span className="status">The Trip is Concluded.</span>
+        ) : null}
       </>
     );
   };
 
   getStatusJSX = () => {
-    const { tracingData } = this.state;
-    const { arrivalStatus, arrivalInMinutes } = tracingData;
+    const { tracingData, arrivalStatus, trackerType } = this.state;
+    const { arrivalInMinutes } = tracingData;
 
     if (!arrivalStatus) return null;
+
+    const mapping = {
+      "ARRIVED AT DESTINATION":
+        trackerType === "CAB_TRACKER" ? "COMPLETED" : "ARRIVED",
+      "ARRIVED AT SOURCE": "ARRIVED",
+    };
 
     return (
       <>
@@ -413,7 +435,11 @@ class Tracing extends Component {
             </div>
           )}
         </span>
-        <span className="status-label">{arrivalStatus}</span>
+        <span className="status-label">
+          {mapping.hasOwnProperty(arrivalStatus)
+            ? mapping[arrivalStatus]
+            : arrivalStatus}
+        </span>
       </>
     );
   };
@@ -501,17 +527,16 @@ class Tracing extends Component {
 
     const onUpdateDestination = () => {
       const { idToken, selectedDestination } = this.state;
+      this.setState({ showRoutingToast: true, selectedDestination: undefined });
       updateDestinationApi(idToken, selectedDestination)
         .then((res) => {
           this.setState(
             {
               destinationData: this.state.customDestinationResultData,
               customDestinationResultData: undefined,
-              showRoutingToast: true,
-              selectedDestination: undefined,
               destinationSearchBarValue: "",
             },
-            this.renderDirection
+            () => this.renderDirection(true)
           );
         })
         .catch((err) => {
@@ -553,7 +578,7 @@ class Tracing extends Component {
     );
   };
 
-  renderDirection = () => {
+  renderDirection = (hideRoutingToast = false) => {
     const { map } = this.state;
 
     if (this.directionsService === null) {
@@ -602,7 +627,8 @@ class Tracing extends Component {
           new window.google.maps.Point(13, 22)
         ),
       };
-      const { sourceData, destinationData } = this.state;
+      const { sourceData, destinationData, currentGeoLocation, routeTowards } =
+        this.state;
 
       const origin = {
         lat: sourceData.geoLocation.latitude,
@@ -615,16 +641,24 @@ class Tracing extends Component {
 
       this.directionsService.route(
         {
-          origin: origin,
-          destination: destination,
+          origin: currentGeoLocation,
+          destination: routeTowards === "DESTINATION" ? destination : origin,
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
         (response, status) => {
           if (status === "OK") {
             this.directionsRenderer.setDirections(response);
             let leg = response.routes[0].legs[0];
-            makeMarker(leg.start_location, icons.start);
-            makeMarker(leg.end_location, icons.end);
+            makeMarker(origin, icons.start);
+            if (routeTowards === "DESTINATION") {
+              makeMarker(leg.end_location, icons.end);
+            } else {
+              makeMarker(destination, icons.end);
+            }
+
+            if (hideRoutingToast) {
+              this.setState({ showRoutingToast: false });
+            }
           } else {
             window.alert("Directions request failed due to " + status);
           }
@@ -732,7 +766,6 @@ class Tracing extends Component {
 
           <Snackbar
             open={showRoutingToast}
-            autoHideDuration={2000}
             onClose={() => {
               this.setState({ showRoutingToast: false });
             }}
