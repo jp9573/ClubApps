@@ -527,17 +527,16 @@ class Tracing extends Component {
 
     const onUpdateDestination = () => {
       const { idToken, selectedDestination } = this.state;
+      this.setState({ showRoutingToast: true, selectedDestination: undefined });
       updateDestinationApi(idToken, selectedDestination)
         .then((res) => {
           this.setState(
             {
               destinationData: this.state.customDestinationResultData,
               customDestinationResultData: undefined,
-              showRoutingToast: true,
-              selectedDestination: undefined,
               destinationSearchBarValue: "",
             },
-            this.renderDirection
+            () => this.renderDirection(true)
           );
         })
         .catch((err) => {
@@ -579,7 +578,7 @@ class Tracing extends Component {
     );
   };
 
-  renderDirection = () => {
+  renderDirection = (hideRoutingToast = false) => {
     const { map } = this.state;
 
     if (this.directionsService === null) {
@@ -655,6 +654,10 @@ class Tracing extends Component {
               makeMarker(leg.end_location, icons.end);
             } else {
               makeMarker(destination, icons.end);
+            }
+
+            if (hideRoutingToast) {
+              this.setState({ showRoutingToast: false });
             }
           } else {
             window.alert("Directions request failed due to " + status);
@@ -763,7 +766,6 @@ class Tracing extends Component {
 
           <Snackbar
             open={showRoutingToast}
-            autoHideDuration={2000}
             onClose={() => {
               this.setState({ showRoutingToast: false });
             }}
