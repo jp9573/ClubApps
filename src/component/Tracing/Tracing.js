@@ -602,7 +602,8 @@ class Tracing extends Component {
           new window.google.maps.Point(13, 22)
         ),
       };
-      const { sourceData, destinationData } = this.state;
+      const { sourceData, destinationData, currentGeoLocation, routeTowards } =
+        this.state;
 
       const origin = {
         lat: sourceData.geoLocation.latitude,
@@ -615,16 +616,20 @@ class Tracing extends Component {
 
       this.directionsService.route(
         {
-          origin: origin,
-          destination: destination,
+          origin: currentGeoLocation,
+          destination: routeTowards === "DESTINATION" ? destination : origin,
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
         (response, status) => {
           if (status === "OK") {
             this.directionsRenderer.setDirections(response);
             let leg = response.routes[0].legs[0];
-            makeMarker(leg.start_location, icons.start);
-            makeMarker(leg.end_location, icons.end);
+            makeMarker(origin, icons.start);
+            if (routeTowards === "DESTINATION") {
+              makeMarker(leg.end_location, icons.end);
+            } else {
+              makeMarker(destination, icons.end);
+            }
           } else {
             window.alert("Directions request failed due to " + status);
           }
