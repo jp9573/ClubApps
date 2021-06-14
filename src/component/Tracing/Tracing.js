@@ -153,7 +153,8 @@ class Tracing extends Component {
   };
 
   getTrackingUpdateData = () => {
-    const { idToken, tracingData, isTabActive } = this.state;
+    const { idToken, tracingData, isTabActive, currentGeoLocation } =
+      this.state;
 
     if (!isTabActive) return;
 
@@ -166,14 +167,22 @@ class Tracing extends Component {
           lat: res.data.currentGeoLocation.latitude,
           lng: res.data.currentGeoLocation.longitude,
         };
-        this.setState(
-          {
-            currentGeoLocation: newCurrentGeoLocation,
-            routeTowards: res.data.routeTowards,
-            arrivalStatus: res.data.arrivalStatus,
-          },
-          this.loadETAData
-        );
+        if (
+          newCurrentGeoLocation.lat !== currentGeoLocation.lat &&
+          newCurrentGeoLocation.lng !== currentGeoLocation.lng
+        ) {
+          this.setState(
+            {
+              currentGeoLocation: newCurrentGeoLocation,
+              routeTowards: res.data.routeTowards,
+              arrivalStatus: res.data.arrivalStatus,
+            },
+            () => {
+              this.renderDirection();
+              this.loadETAData();
+            }
+          );
+        }
       })
       .catch((err) => {
         console.error(err.message);
@@ -536,7 +545,10 @@ class Tracing extends Component {
               customDestinationResultData: undefined,
               destinationSearchBarValue: "",
             },
-            () => this.renderDirection(true)
+            () => {
+              this.renderDirection(true);
+              this.loadETAData();
+            }
           );
         })
         .catch((err) => {
