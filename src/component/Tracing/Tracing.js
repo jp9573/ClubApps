@@ -142,7 +142,10 @@ class Tracing extends Component {
             this.getBusinessData();
             this.getVendorData();
             this.getCustomDestinationData();
-            this.timer = setInterval(this.getTrackingUpdateData, 60 * 1000);
+            this.timer = setInterval(
+              this.getTrackingUpdateData,
+              process.env.REACT_APP_POLLING_INTERVAL * 1000
+            );
           }
         );
       })
@@ -168,7 +171,7 @@ class Tracing extends Component {
           lng: res.data.currentGeoLocation.longitude,
         };
         if (
-          newCurrentGeoLocation.lat !== currentGeoLocation.lat &&
+          newCurrentGeoLocation.lat !== currentGeoLocation.lat ||
           newCurrentGeoLocation.lng !== currentGeoLocation.lng
         ) {
           this.setState(
